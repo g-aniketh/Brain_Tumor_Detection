@@ -1,75 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Brain Tumor Detection</title>
-  <style>
-    h1 {
-      font-size: 40px;
-      font-family: Roboto;
-      font-weight: normal;
-      color: rgb(100, 100, 100);
-      text-align: center;
-    }
-
-    h2 {
-      font-family: Roboto;
-      font-size: 32px;
-      color: rgb(100, 100, 100);
-      text-align: center;
-      font-weight: normal;
-    }
-
-    p {
-      font-family: Roboto;
-      color: rgb(80, 80, 80);
-    }
-
-    #container {
-      max-width: 720px;
-      margin: 0 auto;
-    }
-
-    #canvas {
-      background-color: #f1f1f1;
-    }
-
-    img {
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-    }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 
 <body>
-  <div id="container">
-    <h1>Brain Tumor Detection</h1>
-    <h2>About Brain Tumor</h2>
-    <p>
-      A brain tumor is an abnormal growth of cells within the brain or its surrounding tissue. There are two main types
-      of brain tumors: primary and secondary.
-      Some common types of primary brain tumors include:
-    </p>
-    <ol>
-      <li>Glioma Tumor- A glioma tumor is a type of brain tumor that originates from glial cells in the brain or spine.
-      </li>
-      <li>Malignant Tumor- A malignant tumor is a type of cancerous growth that has the potential to invade nearby
-        tissues and spread to other parts of the body.</li>
-      <li>Pituitary Tumor - A pituitary tumor is an abnormal growth in the pituitary gland that can cause hormonal
-        imbalances and other health problems. </li>
-    </ol>
+  <main class="page-shell">
+    <section class="hero">
+      <span class="hero__badge">Clinical Decision Support</span>
+      <h1>Brain MRI Tumor Classification</h1>
+      <p>
+        Upload a brain MRI image to generate a fast model prediction for one of four classes:
+        <strong>no tumor</strong>, <strong>glioma</strong>, <strong>meningioma</strong>, or <strong>pituitary</strong>.
+      </p>
+    </section>
 
-    <img id="banner" src="../static/germ-cell-tumor-second-look-looping.gif" height="320" class="center" />
+    <section class="grid">
+      <article class="card">
+        <h2>Clinical Context</h2>
+        <p>
+          A brain tumor is an abnormal growth of cells in brain tissue. This tool assists with preliminary image
+          screening and is intended to support, not replace, expert clinical evaluation.
+        </p>
+        <ul class="feature-list">
+          <li><strong>Glioma:</strong> originates from glial cells in the brain or spine.</li>
+          <li><strong>Meningioma:</strong> develops in the meninges surrounding the brain and spinal cord.</li>
+          <li><strong>Pituitary:</strong> forms in the pituitary gland and can affect endocrine function.</li>
+          <li><strong>No Tumor:</strong> MRI appearance not classified as tumorous by the model.</li>
+        </ul>
+      </article>
 
-    <h2>Upload MRI Here</h2>
-    <div style="text-align:center;">
-      <form action="/result" enctype="multipart/form-data" method="post">
-        <input type="file" name="image" id="image" accept="image/*">
-        <input type="submit">
-      </form>
-    </div>
-  </div>
+      <article class="card">
+        <h2>Upload MRI</h2>
+        <div class="image-panel">
+          <img id="banner" src="{{ url_for('static', filename='germ-cell-tumor-second-look-looping.gif') }}"
+            alt="Brain MRI visualization">
+        </div>
+        <form class="upload-form" action="/result" enctype="multipart/form-data" method="post">
+          <label class="input-label" for="image">Select MRI image file</label>
+          <input class="file-input" type="file" name="image" id="image" accept="image/*" required>
+          <button class="btn btn-primary" type="submit">Analyze Image</button>
+        </form>
+      </article>
+    </section>
+  </main>
 </body>
 
 </html>

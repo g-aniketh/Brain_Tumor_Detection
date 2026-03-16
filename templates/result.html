@@ -4,17 +4,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Result</title>
+  <title>Prediction Result</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 
 <body>
-  <div id="result">
-    {% if tumor_result %}
-    <h2>Result: {{ tumor_result }}</h2>
-    {% endif %}
-  </div>
+  <main class="page-shell">
+    <section class="hero">
+      <span class="hero__badge">Analysis Completed</span>
+      <h1>Brain MRI Classification Output</h1>
+      <p>Review model output and confidence score below. Final diagnosis should always be made by a qualified medical
+        professional.</p>
+    </section>
 
-  <a href="/">Home</a>
+    <section class="card">
+      <h2 class="result-title">Result Summary</h2>
+
+      {% if error %}
+      <div class="message message-error">{{ error }}</div>
+      {% endif %}
+
+      {% if tumor_result %}
+      <div class="message message-success">Predicted Class: <strong>{{ tumor_result.replace('_', ' ').title()
+          }}</strong></div>
+      {% if confidence is not none %}
+      <div class="metric">
+        <div class="metric-label">Confidence Score: <strong>{{ confidence }}%</strong></div>
+        <div class="confidence-bar" aria-label="confidence score">
+          <span style="width: {{ confidence }}%;"></span>
+        </div>
+      </div>
+      {% endif %}
+      {% endif %}
+
+      <div class="actions">
+        <a class="btn btn-secondary" href="/">Analyze Another MRI</a>
+      </div>
+    </section>
+  </main>
 </body>
 
 </html>

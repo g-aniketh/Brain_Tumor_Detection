@@ -1,66 +1,92 @@
 import os
 import cv2
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.decomposition import PCA
 
 
-# Load data
-path_no_tumor = './no_tumor'
-path_pituitary_tumor = './pituitary_tumor'
-path_meningioma_tumor = './meningioma_tumor'
-path_glioma_tumor = './glioma_tumor'
-tumor_check = {'no_tumor': 0, 'pituitary_tumor': 1, 'meningioma_tumor': 2, 'glioma_tumor': 3}
+DATASET_LABELS = {
+    'no_tumor': 0,
+    'pituitary_tumor': 1,
+    'meningioma_tumor': 2,
+    'glioma_tumor': 3,
+}
+LABEL_TO_NAME = {value: key for key, value in DATASET_LABELS.items()}
+IMAGE_SIZE = (200, 200)
 
-x = []
-y = []
-for cls in tumor_check:
-    if cls == 'no_tumor':
-        path = path_no_tumor
-    elif cls == 'pituitary_tumor':
-        path = path_pituitary_tumor
-    elif cls == 'meningioma_tumor':
-        path = path_meningioma_tumor
-    elif cls == 'glioma_tumor':
-        path = path_glioma_tumor
-    for j in os.listdir(path):
-        image = cv2.imread(path+'/'+j, 0)
-        image = cv2.resize(image, (200, 200))
-        x.append(image)
-        y.append(tumor_check[cls])
 
-x = np.array(x)
-y = np.array(y)
+def _load_dataset():
+    images = []
+    labels = []
 
-pd.Series(y).value_counts()
+    for class_name, class_id in DATASET_LABELS.items():
+        class_path = f'./{class_name}'
+        if not os.path.isdir(class_path):
+            continue
 
-# Prepare data
-x_update = x.reshape(len(x), -1)
-x_train, x_test, y_train, y_test = train_test_split(x_update, y, random_state=10, test_size=0.3)
+        for filename in os.listdir(class_path):
+            image_path = os.path.join(class_path, filename)
+            image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+            if image is None:
+                continue
 
-x_train = x_train / 255
-x_test = x_test / 255
+            image = cv2.resize(image, IMAGE_SIZE)
+            images.append(image)
+            labels.append(class_id)
 
-pca = PCA(.98)
-pca_train = pca.fit_transform(x_train)
-pca_test = pca.transform(x_test)
+    if not images:
+        raise ValueError('No valid training images were found in dataset folders.')
 
-logistic = LogisticRegression(C=0.1)
-logistic.fit(pca_train, y_train)
+    return np.array(images), np.array(labels)
 
-sv = SVC()
-sv.fit(pca_train, y_train)
+
+def _train_model():
+    x, y = _load_dataset()
+    x_update = x.reshape(len(x), -1)
+    x_train, _, y_train, _ = train_test_split(x_update, y, random_state=10, test_size=0.3)
+
+    x_train = x_train / 255
+
+    pca = PCA(0.98)
+    pca_train = pca.fit_transform(x_train)
+
+    svm_model = SVC(probability=True)
+    svm_model.fit(pca_train, y_train)
+    return pca, svm_model
+
+
+PCA_MODEL, SVM_MODEL = _train_model()
+
+
+def _preprocess_uploaded_image(file):
+    image_buffer = np.frombuffer(file.read(), np.uint8)
+    image = cv2.imdecode(image_buffer, cv2.IMREAD_GRAYSCALE)
+    if image is None:
+        raise ValueError('Unable to decode uploaded image.')
+
+    image = cv2.resize(image, IMAGE_SIZE)
+    image = image.reshape(1, -1) / 255
+    return image
+
+
+def get_tumor_prediction(file):
+    processed_image = _preprocess_uploaded_image(file)
+    transformed = PCA_MODEL.transform(processed_image)
+
+    prediction = SVM_MODEL.predict(transformed)
+    probabilities = SVM_MODEL.predict_proba(transformed)[0]
+
+    predicted_index = int(prediction[0])
+    predicted_label = LABEL_TO_NAME[predicted_index]
+    confidence = float(np.max(probabilities))
+
+    return {
+        'tumor_type': predicted_label,
+        'confidence': confidence,
+    }
+
 
 def get_tumor_type(file):
-    img = cv2.imdecode(np.frombuffer(file.read(), np.uint8), cv2.IMREAD_GRAYSCALE)
-    img1 = cv2.resize(img, (200, 200))
-    img1 = img1.reshape(1, -1) / 255
-    p = sv.predict(pca.transform(img1))
-    dec = {0: 'no_tumor', 1: 'pituitary_tumor', 2: 'meningioma_tumor', 3: 'glioma_tumor'}
-    tumor_type = dec[p[0]]
-    return tumor_type
+    result = get_tumor_prediction(file)
+    return result['tumor_type']
