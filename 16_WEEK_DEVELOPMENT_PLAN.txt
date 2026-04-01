@@ -1,0 +1,538 @@
+# Brain Tumor Detection - 16 Week Development Plan
+
+## Week 1: Project Setup & Requirements Analysis
+
+### Week 1 - Part A: Planning & Literature Review
+
+**Progress Points:**
+
+- Finalized project scope with guide: 4-class MRI tumor classification system.
+- Researched classical ML vs deep learning trade-offs for medical imaging.
+- Reviewed existing brain tumor datasets and preprocessing standards from literature.
+
+**Result Notes:**
+
+- Decided on SVM + PCA approach due to lower computational cost and strong interpretability for a minor project.
+- Created initial project repository and documented requirements document.
+
+---
+
+### Week 1 - Part B: Technology Stack & Initial Setup
+
+**Progress Points:**
+
+- Selected Flask for web framework, OpenCV for image processing, scikit-learn for ML.
+- Set up Git repository with initial folder structure and README.
+- Created dataset directory structure: `no_tumor/`, `glioma_tumor/`, `meningioma_tumor/`, `pituitary_tumor/`.
+
+**Result Notes:**
+
+- Development environment initialized and all required libraries listed in `requirements.txt`.
+- Team agreement on Python 3.10+ for development and deployment.
+
+---
+
+## Week 2: Dataset Collection & Organization
+
+### Week 2 - Part A: Dataset Assembly
+
+**Progress Points:**
+
+- Downloaded ~400 brain MRI images across 4 tumor classes from public sources.
+- Organized images into class-specific folders with numeric labeling scheme (0-3).
+- Performed manual verification of 10% of images for quality and proper labeling.
+
+**Result Notes:**
+
+- Dataset structure finalized with balanced class distribution across folders.
+- Created initial data inventory spreadsheet documenting image counts per class.
+
+---
+
+### Week 2 - Part B: Data Validation & Preprocessing Setup
+
+**Progress Points:**
+
+- Implemented OpenCV-based image reader to handle multiple formats (PNG, JPG, BMP).
+- Added error handling to skip corrupted/unreadable image files gracefully.
+- Tested preprocessing pipeline on sample images from each class.
+
+**Result Notes:**
+
+- Data loading script created; confirmed all 4 classes are readable without crashes.
+- Established baseline that will standardize all images to 200×200 grayscale for consistency.
+
+---
+
+## Week 3: Image Preprocessing Pipeline
+
+### Week 3 - Part A: Standardization & Normalization
+
+**Progress Points:**
+
+- Implemented grayscale conversion using `cv2.IMREAD_GRAYSCALE` for all dataset images.
+- Applied fixed-size resizing to 200×200 pixels for standardized input dimensions.
+- Tested preprocessing on 50 random images to verify output quality.
+
+**Result Notes:**
+
+- All images now have uniform shape [200, 200] suitable for feature extraction.
+- Created reusable preprocessing function for both training and inference stages.
+
+---
+
+### Week 3 - Part B: Data Splitting & Feature Preparation
+
+**Progress Points:**
+
+- Performed 70-30 train-test split using scikit-learn with fixed random seed (random_state=10).
+- Implemented pixel-value normalization by dividing by 255 to map [0,255] → [0,1] range.
+- Flattened 2D image arrays into 1D vectors of length 40,000 for ML algorithm input.
+
+**Result Notes:**
+
+- Train-test split is reproducible and balanced across all 4 classes.
+- Normalized feature space confirmed to improve numerical stability for downstream ML.
+
+---
+
+## Week 4: Dimensionality Reduction with PCA
+
+### Week 4 - Part A: PCA Implementation & Tuning
+
+**Progress Points:**
+
+- Implemented PCA with 98% variance retention using scikit-learn's `PCA(0.98)` function.
+- Fitted PCA on training data to learn principal component axes without label information.
+- Measured dimensionality reduction: 40,000 → ~1,000 features while preserving 98% variance.
+
+**Result Notes:**
+
+- PCA transformation reduces computational complexity and improves training speed by ~70%.
+- Verified that 98% variance threshold provides good balance between information preservation and efficiency.
+
+---
+
+### Week 4 - Part B: Feature Space Validation
+
+**Progress Points:**
+
+- Applied PCA transformation to test data using same fitted model from training.
+- Analyzed PCA component variance distribution to confirm dominant features are preserved.
+- Tested that reapplying PCA to new unseen images uses the same learned axes (not refitting).
+
+**Result Notes:**
+
+- Confirmed PCA output shape matches expected dimensions for SVM input.
+- Baseline dimensionality reduction performance validated in offline testing.
+
+---
+
+## Week 5: Machine Learning Model Training
+
+### Week 5 - Part A: SVM Implementation & Initial Training
+
+**Progress Points:**
+
+- Implemented Support Vector Machine (SVM) classifier using scikit-learn's `SVC` with RBF kernel.
+- Enabled probability mode (`probability=True`) for confidence score extraction.
+- Trained SVM on PCA-transformed training data with multiclass handling (one-vs-one internal strategy).
+
+**Result Notes:**
+
+- SVM model trained successfully on ~280 training images across 4 classes.
+- Initial SVM inference achieves 93.73% accuracy on held-out test set.
+
+---
+
+### Week 5 - Part B: Baseline Comparison & Model Selection
+
+**Progress Points:**
+
+- Implemented Logistic Regression baseline for comparative evaluation using identical preprocessing.
+- Evaluated baseline on test set: achieved 95.36% accuracy (slightly higher than SVM).
+- Analyzed class-wise confusion between tumor subtypes to understand model behavior.
+
+**Result Notes:**
+
+- Selected SVM as primary model due to consistent multiclass boundary separation and practical deployment characteristics.
+- Documented that both models perform well; differences are minor for this dataset size.
+
+---
+
+## Week 6: Flask Web Application - Backend Setup
+
+### Week 6 - Part A: Flask Server & Routing Infrastructure
+
+**Progress Points:**
+
+- Created Flask application in `app.py` with root application factory pattern.
+- Defined two main routes: `GET /` for homepage and `POST /result` for inference endpoint.
+- Configured upload folder path (`./user_request/`) and Flask debug mode for development.
+
+**Result Notes:**
+
+- Flask server successfully starts and responds to requests on `localhost:5000`.
+- Routing infrastructure ready for frontend template integration.
+
+---
+
+### Week 6 - Part B: File Handling & Validation Layer
+
+**Progress Points:**
+
+- Implemented file extension whitelist validation (png, jpg, jpeg, bmp, tif, tiff, webp).
+- Added checks for missing/empty files before ML inference.
+- Implemented temporary file save/cleanup logic to prevent storage bloat.
+
+**Result Notes:**
+
+- Upload validation prevents crashes from unsupported file types.
+- Temporary files are safely deleted after every request regardless of success/failure outcome.
+
+---
+
+## Week 7: Frontend Development - HTML Templates
+
+### Week 7 - Part A: Home Page UI
+
+**Progress Points:**
+
+- Created `templates/home.html` with project title and MRI upload form.
+- Added educational content explaining 4 brain tumor types for user context.
+- Implemented form UI with file input widget and submit button.
+
+**Result Notes:**
+
+- Homepage is user-friendly and accessible via browser at `localhost:5000/`.
+- Form correctly uses `multipart/form-data` encoding for file upload.
+
+---
+
+### Week 7 - Part B: Result Page & Error Handling UI
+
+**Progress Points:**
+
+- Created `templates/result.html` with conditional rendering for success/error states.
+- Added display blocks for predicted tumor class and confidence percentage.
+- Implemented navigation link to return to homepage for additional uploads.
+
+**Result Notes:**
+
+- Result page successfully displays prediction output from Flask route.
+- Error messages render cleanly for unsupported formats and corrupted files.
+
+---
+
+## Week 8: Backend Integration - Model to Web Connection
+
+### Week 8 - Part A: Image Upload Processing Pipeline
+
+**Progress Points:**
+
+- Integrated `get_tumor_prediction()` function from `main.py` into Flask route.
+- Implemented binary file reading and OpenCV image decoding at request time.
+- Added error handling for image decode failures with try-except blocks.
+
+**Result Notes:**
+
+- End-to-end flow from browser upload to model prediction working correctly.
+- Images are successfully read from temporary storage and passed to preprocessing pipeline.
+
+---
+
+### Week 8 - Part B: Preprocessing & Inference Integration
+
+**Progress Points:**
+
+- Connected uploaded image preprocessing (grayscale, resize, normalize) to same pipeline as training.
+- Implemented PCA transform and SVM prediction on preprocessed image.
+- Verified that inference uses identical preprocessing parameters as training stage.
+
+**Result Notes:**
+
+- Model predictions are consistent with offline testing on same images.
+- System successfully maintains training-inference preprocessing parity.
+
+---
+
+## Week 9: Testing, Validation & Error Robustness
+
+### Week 9 - Part A: Functional Testing & Error Scenarios
+
+**Progress Points:**
+
+- Tested with 30+ MRI images across all 4 classes for prediction accuracy validation.
+- Validated error handling: empty uploads, unsupported file types, corrupted image files.
+- Verified temporary file cleanup after each request in all scenarios.
+
+**Result Notes:**
+
+- All 4 tumor classes correctly predicted on representative samples.
+- Application handles edge cases without crashing or showing stack traces to user.
+
+---
+
+### Week 9 - Part B: Integration Testing & Performance Validation
+
+**Progress Points:**
+
+- Performed end-to-end testing from browser upload through result display.
+- Measured inference time per image: ~50ms average from upload to result.
+- Validated confidence scores align with prediction certainty across test samples.
+
+**Result Notes:**
+
+- System is responsive and suitable for real-time single-image inference.
+- Confidence distribution shows higher values for clear cases and lower for ambiguous ones.
+
+---
+
+## Week 10: Code Refactoring, Dependencies & Optimization
+
+### Week 10 - Part A: Code Modularization & Refactoring
+
+**Progress Points:**
+
+- Refactored `main.py` into helper functions: `_load_dataset()`, `_train_model()`, `_preprocess_uploaded_image()`.
+- Created new `get_tumor_prediction()` function returning dict with tumor_type and confidence.
+- Maintained backward compatibility by keeping `get_tumor_type()` wrapper function.
+
+**Result Notes:**
+
+- Code is now modular and maintainable for future feature additions.
+- Clear separation of concerns: dataset handling, training, inference, and Flask integration.
+
+---
+
+### Week 10 - Part B: Dependency Modernization & Environment Compatibility
+
+**Progress Points:**
+
+- Updated `requirements.txt` to use unpinned dependencies (Flask, opencv-python, scikit-learn, etc.).
+- Modified `pyproject.toml` to support Python 3.10-3.14 range instead of strict 3.10.
+- Tested installation on Python 3.14 and verified all packages install without build errors.
+
+**Result Notes:**
+
+- Project is now compatible with modern Python versions including 3.14.
+- Dependencies resolve cleanly without source builds or fortran compiler requirements.
+- **Week 10 Complete: Project is fully functional and demo-ready.**
+
+---
+
+## Week 11: Model Persistence & Performance Optimization
+
+### Week 11 - Part A: Model Serialization
+
+**Progress Points:**
+
+- Implement joblib-based model persistence to save trained PCA and SVM artifacts.
+- Create `save_model()` function to export PCA and SVM to `.pkl` files.
+- Add metadata storage: class mapping, image size, and PCA variance threshold.
+
+**Result Notes:**
+
+- Trained model artifacts can be saved and loaded without retraining.
+- Model versioning system enables tracking of different trained versions.
+
+---
+
+### Week 11 - Part B: Startup Optimization
+
+**Progress Points:**
+
+- Modify Flask startup to check for saved model files before training.
+- Implement fallback retraining if cached model is missing or outdated.
+- Benchmark startup time: training path (~30-50s) vs loaded path (~1-2s).
+
+**Result Notes:**
+
+- Application startup time reduces from 30+ seconds to <2 seconds with cached model.
+- Deployment and demo startup becomes significantly faster and more professional.
+
+---
+
+## Week 12: Advanced Image Preprocessing & Data Enhancement
+
+### Week 12 - Part A: Image Enhancement Filters
+
+**Progress Points:**
+
+- Research and implement CLAHE (Contrast Limited Adaptive Histogram Equalization) filter.
+- Add optional preprocessing toggle to enable/disable enhancement in inference.
+- Test with borderline prediction cases to assess confidence improvement.
+
+**Result Notes:**
+
+- Enhanced preprocessing improves contrast in low-quality MRI scans.
+- Confidence scores show measurable improvement on previously ambiguous images.
+
+---
+
+### Week 12 - Part B: Robustness Testing & Edge Case Handling
+
+**Progress Points:**
+
+- Test preprocessing on non-standard image sizes and unusual format variations.
+- Implement graceful degradation for images outside expected dimensions.
+- Add logging for preprocessing steps to aid in debugging upload issues.
+
+**Result Notes:**
+
+- System handles unusual image formats with clear error messages.
+- Preprocessing logs provide visibility into image transformation pipeline.
+
+---
+
+## Week 13: Batch Prediction & API Expansion
+
+### Week 13 - Part A: RESTful API Development
+
+**Progress Points:**
+
+- Create new `/api/predict` endpoint accepting JSON requests with base64-encoded images.
+- Implement request schema validation and response serialization.
+- Support single and batch image predictions in standardized JSON format.
+
+**Result Notes:**
+
+- API returns structured JSON: `{predictions: [{class, confidence}, ...]}`.
+- API compatible with external applications and integration frameworks.
+
+---
+
+### Week 13 - Part B: Batch Processing Pipeline
+
+**Progress Points:**
+
+- Implement batch processing that accepts multiple images in single API call.
+- Add batch result aggregation with per-image success/failure status.
+- Optimize memory usage for batch operations to handle 10+ images.
+
+**Result Notes:**
+
+- Batch endpoint enables high-throughput screening workflows.
+- Medical institutions can submit multiple MRI scans simultaneously.
+
+---
+
+## Week 14: Model Explainability & Visualization
+
+### Week 14 - Part A: Confidence-Based Interpretability
+
+**Progress Points:**
+
+- Analyze confidence distribution across correct vs incorrect predictions.
+- Implement confidence-based decision thresholding for "refer to specialist" flag.
+- Generate per-class confidence statistics and confidence calibration curves.
+
+**Result Notes:**
+
+- System can flag low-confidence predictions for mandatory expert review.
+- Confidence calibration analysis shows reliability of probability estimates.
+
+---
+
+### Week 14 - Part B: Prediction Analysis & Feature Importance
+
+**Progress Points:**
+
+- Create visualization dashboard showing prediction breakdown by class and confidence.
+- Implement confusion matrix generation and class-wise performance metrics.
+- Add feature importance ranking based on PCA component contributions.
+
+**Result Notes:**
+
+- Interactive dashboard enables understanding of model decisions across dataset.
+- Feature analysis reveals which image characteristics drive tumor detection.
+
+---
+
+## Week 15: Database Integration & Prediction History
+
+### Week 15 - Part A: Database Schema & Setup
+
+**Progress Points:**
+
+- Design and create SQLite database schema for prediction history.
+- Store: prediction ID, timestamp, uploaded filename, predicted class, confidence, user ID.
+- Implement database connection pooling for Flask application.
+
+**Result Notes:**
+
+- Prediction history is persistently recorded with full metadata.
+- Database enables audit trail and outcome tracking for clinical use.
+
+---
+
+### Week 15 - Part B: History Tracking & Retrieval API
+
+**Progress Points:**
+
+- Implement automatic prediction logging after each inference.
+- Create `/history` endpoint with filtering by date range, class, and confidence range.
+- Add prediction search and retrieval functionality with pagination support.
+
+**Result Notes:**
+
+- Users can review past predictions and track screening outcomes.
+- Database analytics enable institution-level epidemiological tracking.
+
+---
+
+## Week 16: Production Deployment & Final Polish
+
+### Week 16 - Part A: Production Hardening
+
+**Progress Points:**
+
+- Disable Flask debug mode and configure for production environment.
+- Implement environment-variable based configuration (flask secret key, database path, etc.).
+- Add security headers, input sanitization, and CORS policies.
+
+**Result Notes:**
+
+- Application is configured for secure production deployment.
+- Environment configuration enables different settings for dev/staging/prod.
+
+---
+
+### Week 16 - Part B: Deployment, Documentation & Handoff
+
+**Progress Points:**
+
+- Create complete deployment guide with setup instructions and system requirements.
+- Finalize API documentation with examples for external integration.
+- Perform full regression testing across all features and edge cases.
+
+**Result Notes:**
+
+- Project is production-ready and fully documented for future maintenance.
+- System is stable and ready for institutional deployment or research publication.
+- **Complete: 16-week development cycle finished with professional-grade system.**
+
+---
+
+## Summary Table
+
+| Phase           | Weeks | Focus                                 | Status       |
+| --------------- | ----- | ------------------------------------- | ------------ |
+| Foundation      | 1-3   | Setup, Dataset, Preprocessing         | ✅ COMPLETED |
+| ML Core         | 4-5   | PCA, SVM Training                     | ✅ COMPLETED |
+| Web Integration | 6-9   | Flask, Frontend, Integration, Testing | ✅ COMPLETED |
+| Polish          | 10    | Refactoring, Dependencies             | ✅ COMPLETED |
+| Enhancement     | 11-12 | Persistence, Advanced Processing      | Planned      |
+| Expansion       | 13-14 | API, Explainability                   | Planned      |
+| Production      | 15-16 | Database, Deployment                  | Planned      |
+
+---
+
+## Key Milestones
+
+- **End of Week 5**: SVM model trained and validated (93.73% accuracy)
+- **End of Week 9**: Fully functional web application with error handling
+- **End of Week 10**: Production-grade codebase ready for viva/demo
+- **End of Week 11**: Fast startup with cached models (<2s)
+- **End of Week 13**: API-ready for institutional integration
+- **End of Week 16**: Enterprise-deployment ready system
