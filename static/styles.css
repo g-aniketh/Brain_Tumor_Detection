@@ -180,6 +180,24 @@ body {
   gap: 14px;
 }
 
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.checkbox-row input {
+  accent-color: var(--brand);
+}
+
+.note-text {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
 .input-label {
   font-size: 0.92rem;
   color: var(--text-muted);
@@ -274,6 +292,12 @@ body {
   border: 1px solid rgba(4, 120, 87, 0.3);
 }
 
+.message-warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
 .metric {
   margin-top: 14px;
 }
@@ -301,6 +325,12 @@ body {
 
 .actions {
   margin-top: 18px;
+}
+
+.meta-text {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
 }
 
 .theme-toggle {

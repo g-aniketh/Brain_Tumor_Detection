@@ -59,6 +59,20 @@
         </div>
       </div>
       {% endif %}
+
+      {% if low_confidence %}
+      <div class="message message-warning">
+        This prediction is below the confidence threshold ({{ threshold }}%). Specialist review is strongly advised.
+      </div>
+      {% endif %}
+
+      {% if model_version %}
+      <p class="meta-text">Model version: {{ model_version }}</p>
+      {% endif %}
+
+      {% if latency_ms %}
+      <p class="meta-text">Request latency: {{ latency_ms }} ms</p>
+      {% endif %}
       {% endif %}
 
       <div class="actions">

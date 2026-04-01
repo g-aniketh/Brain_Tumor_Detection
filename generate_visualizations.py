@@ -1,41 +1,56 @@
 """
-Generate PCA Scree Plot and SVM RBF Kernel Visualization
+Generate project visualizations:
+1) PCA cumulative variance plot
+2) Model performance comparison chart
+3) SVM confusion matrix heatmap
+4) Confidence distribution plot
+5) Confidence calibration curve
 """
 
+import json
 import os
+
 import cv2
-import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
 from sklearn.decomposition import PCA
-from sklearn.svm import SVC
-from sklearn.datasets import make_circles
-from sklearn.preprocessing import StandardScaler
 
 
-# ============================================================================
-# 1. PCA CUMULATIVE VARIANCE PLOT (SCREE PLOT)
-# ============================================================================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+ARTIFACT_DIR = os.path.join(BASE_DIR, "artifacts")
+TRAINING_REPORT_PATH = os.path.join(ARTIFACT_DIR, "training_report.json")
 
-def load_dataset():
-    """Load the brain tumor MRI dataset."""
-    DATASET_LABELS = {
-        'no_tumor': 0,
-        'pituitary_tumor': 1,
-        'meningioma_tumor': 2,
-        'glioma_tumor': 3,
-    }
-    IMAGE_SIZE = (200, 200)
-    
+DATASET_LABELS = {
+    "no_tumor": 0,
+    "pituitary_tumor": 1,
+    "meningioma_tumor": 2,
+    "glioma_tumor": 3,
+}
+CLASS_ORDER = ["no_tumor", "pituitary_tumor", "meningioma_tumor", "glioma_tumor"]
+IMAGE_SIZE = (200, 200)
+
+
+def _load_training_report():
+    if not os.path.exists(TRAINING_REPORT_PATH):
+        raise FileNotFoundError(
+            "Training report not found. Start the app once so model artifacts are created first."
+        )
+
+    with open(TRAINING_REPORT_PATH, "r", encoding="utf-8") as report_file:
+        return json.load(report_file)
+
+
+def _load_dataset():
     images = []
     labels = []
 
     for class_name, class_id in DATASET_LABELS.items():
-        class_path = f'./{class_name}'
+        class_path = os.path.join(BASE_DIR, class_name)
         if not os.path.isdir(class_path):
             continue
 
-        for filename in os.listdir(class_path):
+        for filename in sorted(os.listdir(class_path)):
             image_path = os.path.join(class_path, filename)
             image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
             if image is None:
@@ -46,203 +61,201 @@ def load_dataset():
             labels.append(class_id)
 
     if not images:
-        raise ValueError('No training images found.')
+        raise ValueError("No training images found.")
 
     return np.array(images), np.array(labels)
 
 
-def generate_pca_plot():
-    """Generate PCA cumulative variance (scree) plot."""
-    print("Loading dataset for PCA analysis...")
-    x, y = load_dataset()
+def _legacy_pca_cumulative_curve():
+    x, _ = _load_dataset()
     x_flat = x.reshape(len(x), -1) / 255.0
-    
-    print("Fitting PCA with 98% variance...")
     pca = PCA(0.98)
     pca.fit(x_flat)
-    
-    # Calculate cumulative variance
-    cumsum = np.cumsum(pca.explained_variance_ratio_)
-    n_components = len(cumsum)
-    
-    # Create plot
+    return np.cumsum(pca.explained_variance_ratio_)
+
+
+def generate_pca_plot(report):
+    print("Generating PCA cumulative variance plot...")
+
+    explained_variance_ratio = report.get("pca_explained_variance_ratio", [])
+    if explained_variance_ratio:
+        cumulative = np.cumsum(np.array(explained_variance_ratio, dtype=np.float64))
+    else:
+        # Backward compatibility for older training reports that do not include PCA vectors.
+        cumulative = _legacy_pca_cumulative_curve()
+
+    threshold_idx = int(np.argmax(cumulative >= 0.98))
+
     fig, ax = plt.subplots(figsize=(10, 6), dpi=100)
-    
-    # Plot cumulative variance line
-    ax.plot(range(1, n_components + 1), cumsum, 'o-', 
-            color='#0f766e', linewidth=2.5, markersize=4, label='Cumulative Variance')
-    
-    # Mark 98% threshold
-    threshold_idx = np.argmax(cumsum >= 0.98)
-    ax.axhline(y=0.98, color='#dc2626', linestyle='--', linewidth=2, label='98% Threshold')
-    ax.axvline(x=threshold_idx + 1, color='#0284c7', linestyle=':', linewidth=2, 
-               label=f'Optimal Components: {threshold_idx + 1}')
-    
-    # Highlight the cutoff point
-    ax.plot(threshold_idx + 1, cumsum[threshold_idx], 'r*', markersize=20, 
-            markeredgecolor='#0f766e', markeredgewidth=1.5)
-    
-    ax.set_xlabel('Number of PCA Components', fontsize=12, fontweight='bold')
-    ax.set_ylabel('Cumulative Explained Variance Ratio', fontsize=12, fontweight='bold')
-    ax.set_title('PCA Cumulative Variance Plot (Scree Plot)', fontsize=14, fontweight='bold', pad=20)
-    ax.grid(True, alpha=0.3, linestyle='-', linewidth=0.5)
-    ax.legend(loc='lower right', fontsize=10, framealpha=0.95)
-    ax.set_ylim([0, 1.05])
-    ax.set_xlim([0, min(n_components + 5, 150)])
-    
-    # Add annotation
-    ax.annotate(f'{threshold_idx + 1} components\nexplain 98% variance',
-                xy=(threshold_idx + 1, cumsum[threshold_idx]),
-                xytext=(threshold_idx + 20, 0.88),
-                fontsize=10,
-                bbox=dict(boxstyle='round,pad=0.5', facecolor='#f1f5f9', edgecolor='#0f766e', linewidth=1.5),
-                arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.3', 
-                               color='#0f766e', lw=1.5))
-    
+    ax.plot(range(1, len(cumulative) + 1), cumulative, color="#0f766e", linewidth=2)
+    ax.axhline(0.98, color="#dc2626", linestyle="--", linewidth=1.5)
+    ax.axvline(threshold_idx + 1, color="#0284c7", linestyle=":", linewidth=1.5)
+
+    ax.set_title("PCA Cumulative Variance Plot", fontsize=14, fontweight="bold")
+    ax.set_xlabel("Number of Components")
+    ax.set_ylabel("Cumulative Explained Variance")
+    ax.set_ylim(0, 1.02)
+    ax.grid(alpha=0.25)
+
+    ax.annotate(
+        f"{threshold_idx + 1} components\nfor 98% variance",
+        xy=(threshold_idx + 1, cumulative[threshold_idx]),
+        xytext=(threshold_idx + 15, 0.86),
+        arrowprops={"arrowstyle": "->", "color": "#0f766e"},
+        bbox={"boxstyle": "round,pad=0.4", "fc": "#f8fafc", "ec": "#0f766e"},
+    )
+
     fig.tight_layout()
-    fig.savefig('./static/pca_scree_plot.png', dpi=100, bbox_inches='tight', facecolor='white')
-    print(f"✓ PCA plot saved to ./static/pca_scree_plot.png")
-    print(f"  → {threshold_idx + 1} components capture 98% variance")
+    fig.savefig(os.path.join(STATIC_DIR, "pca_scree_plot.png"), dpi=100, bbox_inches="tight")
     plt.close(fig)
 
 
-# ============================================================================
-# 2. SVM RBF KERNEL VISUALIZATION
-# ============================================================================
+def generate_performance_chart(report):
+    print("Generating model performance comparison chart...")
+    logistic_accuracy = report["baseline_logistic_regression"]["metrics"]["accuracy"] * 100
+    svm_accuracy = report["svm"]["metrics"]["accuracy"] * 100
 
-def generate_rbf_visualization():
-    """Generate 3D SVM RBF kernel visualization."""
-    print("\nGenerating RBF Kernel Visualization...")
-    
-    # Create non-linearly separable 2D data
-    np.random.seed(42)
-    X, y = make_circles(n_samples=300, noise=0.1, factor=0.3)
-    scaler = StandardScaler()
-    X = scaler.fit_transform(X)
-    
-    # Train SVM with RBF kernel
-    svm = SVC(kernel='rbf', gamma='scale', C=1.0)
-    svm.fit(X, y)
-    
-    # Create 3D visualization
-    fig = plt.figure(figsize=(12, 9), dpi=100)
-    ax = fig.add_subplot(111, projection='3d')
-    
-    # RBF transformation: add a third dimension using RBF kernel trick
-    # For visualization, we compute the RBF "height" for each point
-    gamma = svm._gamma if hasattr(svm, '_gamma') else 1.0 / X.shape[1]
-    
-    # Compute RBF kernel to a reference point (origin)
-    Z = np.exp(-gamma * np.sum(X**2, axis=1))
-    
-    # Plot the two classes in 3D space
-    scatter1 = ax.scatter(X[y == 0, 0], X[y == 0, 1], Z[y == 0], 
-                         c='#0f766e', s=80, alpha=0.7, label='Class 0', edgecolors='#115e59', linewidth=0.5)
-    scatter2 = ax.scatter(X[y == 1, 0], X[y == 1, 1], Z[y == 1], 
-                         c='#0284c7', s=80, alpha=0.7, label='Class 1', edgecolors='#0c4a6e', linewidth=0.5)
-    
-    # Create a mesh to visualize the separation surface
-    h = 0.05
-    x_min, x_max = X[:, 0].min() - 0.5, X[:, 0].max() + 0.5
-    y_min, y_max = X[:, 1].min() - 0.5, X[:, 1].max() + 0.5
-    xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
-                         np.arange(y_min, y_max, h))
-    
-    # Compute RBF height for mesh
-    mesh_z = np.exp(-gamma * (xx**2 + yy**2))
-    
-    # Plot the surface
-    ax.plot_surface(xx, yy, mesh_z, alpha=0.3, cmap='coolwarm', 
-                   edgecolor='none', rstride=5, cstride=5)
-    
-    ax.set_xlabel('Feature 1', fontsize=11, fontweight='bold')
-    ax.set_ylabel('Feature 2', fontsize=11, fontweight='bold')
-    ax.set_zlabel('RBF Kernel Height\n(Mapped to Higher Dimension)', fontsize=11, fontweight='bold')
-    ax.set_title('SVM RBF Kernel: 2D Non-linear Data Mapped to 3D Space', 
-                fontsize=14, fontweight='bold', pad=20)
-    
-    ax.legend(loc='upper left', fontsize=10, framealpha=0.95)
-    ax.view_init(elev=25, azim=45)
-    
-    fig.tight_layout()
-    fig.savefig('./static/svm_rbf_kernel.png', dpi=100, bbox_inches='tight', facecolor='white')
-    print(f"✓ RBF Kernel plot saved to ./static/svm_rbf_kernel.png")
-    plt.close(fig)
+    models = ["Logistic Regression", "SVM (RBF)"]
+    values = [logistic_accuracy, svm_accuracy]
+    colors = ["#0f766e", "#0284c7"]
 
+    fig, ax = plt.subplots(figsize=(9, 6), dpi=100)
+    bars = ax.bar(models, values, color=colors, edgecolor="#0f172a", linewidth=1.5)
 
-# ============================================================================
-# 3. PERFORMANCE COMPARISON BAR CHART
-# ============================================================================
+    for bar, value in zip(bars, values):
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            value + 0.4,
+            f"{value:.2f}%",
+            ha="center",
+            va="bottom",
+            fontweight="bold",
+        )
 
-def generate_performance_chart():
-    """Generate performance comparison bar chart."""
-    print("\nGenerating Performance Comparison Chart...")
-    
-    # Model accuracy data
-    models = ['Logistic Regression', 'SVM']
-    accuracies = [95.36, 93.73]
-    colors = ['#0f766e', '#0284c7']
-    
-    # Create figure
-    fig, ax = plt.subplots(figsize=(10, 6), dpi=100)
-    
-    # Create bars
-    bars = ax.bar(models, accuracies, color=colors, alpha=0.85, edgecolor='#0f172a', linewidth=2)
-    
-    # Customize bars with value labels on top
-    for i, (bar, acc) in enumerate(zip(bars, accuracies)):
-        height = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width()/2., height + 0.5,
-                f'{acc}%',
-                ha='center', va='bottom', fontsize=13, fontweight='bold', color='#0f172a')
-    
-    # Set labels and title
-    ax.set_ylabel('Accuracy (%)', fontsize=12, fontweight='bold')
-    ax.set_title('Model Performance Comparison: Brain Tumor Detection', 
-                fontsize=14, fontweight='bold', pad=20)
-    
-    # Set Y-axis to go from 0 to 100
     ax.set_ylim(0, 105)
-    ax.set_yticks(np.arange(0, 101, 10))
-    ax.grid(axis='y', alpha=0.3, linestyle='-', linewidth=0.5)
-    
-    # Add a horizontal line at 90% for reference
-    ax.axhline(y=90, color='#dc2626', linestyle='--', linewidth=1.5, alpha=0.6, label='90% Threshold')
-    
-    # Enhance appearance
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.legend(loc='lower right', fontsize=10, framealpha=0.95)
-    
-    # Add difference annotation
-    diff = accuracies[0] - accuracies[1]
-    ax.text(0.5, 85, f'Difference: +{diff:.2f}%', 
-           ha='center', fontsize=11, fontweight='bold',
-           bbox=dict(boxstyle='round,pad=0.6', facecolor='#f1f5f9', edgecolor='#0f766e', linewidth=1.5))
-    
+    ax.set_ylabel("Accuracy (%)")
+    ax.set_title("Model Performance Comparison", fontsize=14, fontweight="bold")
+    ax.grid(axis="y", alpha=0.25)
+
     fig.tight_layout()
-    fig.savefig('./static/performance_comparison.png', dpi=100, bbox_inches='tight', facecolor='white')
-    print(f"✓ Performance chart saved to ./static/performance_comparison.png")
+    fig.savefig(os.path.join(STATIC_DIR, "performance_comparison.png"), dpi=100, bbox_inches="tight")
     plt.close(fig)
 
 
-# ============================================================================
-# MAIN
-# ============================================================================
+def generate_confusion_matrix_plot(report):
+    print("Generating confusion matrix heatmap...")
+    confusion = np.array(report["svm"]["confusion_matrix"])
 
-if __name__ == '__main__':
-    print("=" * 70)
-    print("Brain Tumor Detection: Generating Visualization Plots")
-    print("=" * 70)
-    
-    try:
-        generate_pca_plot()
-        generate_rbf_visualization()
-        generate_performance_chart()
-        print("\n" + "=" * 70)
-        print("✓ All visualizations generated successfully!")
-        print("=" * 70)
-    except Exception as e:
-        print(f"\n✗ Error: {e}")
-        import traceback
-        traceback.print_exc()
+    fig, ax = plt.subplots(figsize=(8, 6), dpi=100)
+    image = ax.imshow(confusion, cmap="Blues")
+    plt.colorbar(image, ax=ax)
+
+    ax.set_xticks(np.arange(len(CLASS_ORDER)))
+    ax.set_yticks(np.arange(len(CLASS_ORDER)))
+    ax.set_xticklabels([label.replace("_", " ") for label in CLASS_ORDER], rotation=30, ha="right")
+    ax.set_yticklabels([label.replace("_", " ") for label in CLASS_ORDER])
+    ax.set_xlabel("Predicted Class")
+    ax.set_ylabel("True Class")
+    ax.set_title("SVM Confusion Matrix", fontsize=14, fontweight="bold")
+
+    for i in range(confusion.shape[0]):
+        for j in range(confusion.shape[1]):
+            ax.text(j, i, str(confusion[i, j]), ha="center", va="center", color="#0f172a", fontweight="bold")
+
+    fig.tight_layout()
+    fig.savefig(os.path.join(STATIC_DIR, "confusion_matrix.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+
+
+def generate_confidence_distribution_plot(report):
+    print("Generating confidence distribution plot...")
+    samples = report.get("calibration_samples", [])
+    confidences = [sample["confidence"] * 100 for sample in samples]
+    correctness = [sample["correct"] for sample in samples]
+
+    correct_conf = [c for c, ok in zip(confidences, correctness) if ok == 1]
+    wrong_conf = [c for c, ok in zip(confidences, correctness) if ok == 0]
+
+    fig, ax = plt.subplots(figsize=(9, 6), dpi=100)
+    if correct_conf:
+        ax.hist(correct_conf, bins=10, alpha=0.7, color="#047857", label="Correct")
+    if wrong_conf:
+        ax.hist(wrong_conf, bins=10, alpha=0.7, color="#dc2626", label="Incorrect")
+
+    ax.set_xlabel("Confidence (%)")
+    ax.set_ylabel("Number of Predictions")
+    ax.set_title("Confidence Distribution by Prediction Correctness", fontsize=14, fontweight="bold")
+    ax.grid(alpha=0.25)
+    ax.legend()
+
+    fig.tight_layout()
+    fig.savefig(os.path.join(STATIC_DIR, "confidence_distribution.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+
+
+def generate_calibration_curve_plot(report):
+    print("Generating confidence calibration curve...")
+    samples = report.get("calibration_samples", [])
+    if not samples:
+        raise ValueError("Calibration samples are unavailable in training report.")
+
+    confidences = np.array([sample["confidence"] for sample in samples])
+    correctness = np.array([sample["correct"] for sample in samples])
+
+    bins = np.linspace(0.0, 1.0, 11)
+    bin_indices = np.digitize(confidences, bins) - 1
+
+    bin_centers = []
+    empirical_accuracy = []
+
+    for idx in range(len(bins) - 1):
+        in_bin = bin_indices == idx
+        if np.any(in_bin):
+            bin_centers.append((bins[idx] + bins[idx + 1]) / 2)
+            empirical_accuracy.append(np.mean(correctness[in_bin]))
+
+    fig, ax = plt.subplots(figsize=(8, 6), dpi=100)
+    ax.plot([0, 1], [0, 1], "--", color="#64748b", label="Perfect Calibration")
+    ax.plot(bin_centers, empirical_accuracy, "o-", color="#0284c7", linewidth=2, label="Model Calibration")
+
+    ax.set_xlabel("Predicted Confidence")
+    ax.set_ylabel("Observed Accuracy")
+    ax.set_title("Confidence Calibration Curve", fontsize=14, fontweight="bold")
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.grid(alpha=0.25)
+    ax.legend()
+
+    fig.tight_layout()
+    fig.savefig(os.path.join(STATIC_DIR, "calibration_curve.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+
+
+def main():
+    os.makedirs(STATIC_DIR, exist_ok=True)
+
+    print("=" * 72)
+    print("Generating visualization outputs for Brain Tumor Detection project")
+    print("=" * 72)
+
+    report = _load_training_report()
+
+    generate_pca_plot(report)
+    generate_performance_chart(report)
+    generate_confusion_matrix_plot(report)
+    generate_confidence_distribution_plot(report)
+    generate_calibration_curve_plot(report)
+
+    print("=" * 72)
+    print("Visualization generation complete.")
+    print("Saved files:")
+    print("- static/pca_scree_plot.png")
+    print("- static/performance_comparison.png")
+    print("- static/confusion_matrix.png")
+    print("- static/confidence_distribution.png")
+    print("- static/calibration_curve.png")
+    print("=" * 72)
+
+
+if __name__ == "__main__":
+    main()

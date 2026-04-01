@@ -1,44 +1,154 @@
 # Brain Tumor Detection
 
-Brain Tumor Detection model using a Support Vector Machine.
+A full-stack classical machine learning project for brain MRI classification.
 
-About the data:
-The dataset contains 4 folders: yes and no which contains 400 Brain MRI Images. The folder yes contains 300 Brain MRI Images that are tumorous and the folder no contains 100 Brain MRI Images that are non-tumorous.
+The application predicts one of four classes:
 
-About the Brain Tumor
-A brain tumor is an abnormal growth of cells within the brain or its surrounding tissue. There are two main types of brain tumors: primary and secondary. Some common types of primary brain tumors include:
+- no_tumor
+- glioma_tumor
+- meningioma_tumor
+- pituitary_tumor
 
-- Glioma Tumor- A glioma tumor is a type of brain tumor that originates from glial cells in the brain or spine.
+Implemented capabilities:
 
-* Malignant Tumor- A malignant tumor is a type of cancerous growth that has the potential to invade nearby tissues and spread to other parts of the body.
+- Flask web interface for MRI upload
+- PCA + SVM classification pipeline
+- Logistic Regression baseline comparison
+- Confidence score and low-confidence triage flag
+- Secure file upload handling and cleanup
+- JSON API (single + batch inference)
+- File-based prediction history with filtering
+- Model persistence with automatic cache loading
+- Metrics and explainability visualization outputs
 
-- Pituitary Tumor - A pituitary tumor is an abnormal growth in the pituitary gland that can cause hormonal imbalances and other health problems.
+## Project Structure
 
-# Accuracy Score
+- app.py: Flask app, web routes, API routes, history, security headers
+- main.py: dataset loading, training, model persistence, inference
+- templates/: web pages
+- static/: styles and generated plots
+- artifacts/: saved model bundle and training report
+- tests/: automated regression tests
 
-Now, the best model (the one with the best validation accuracy) detects brain tumor with:
+## Core Pipeline
 
-![accuracy_score_n](https://user-images.githubusercontent.com/128196839/235724080-5940eeed-a283-4a7c-9e39-8847bae15eb4.jpg)
+1. Load labeled MRI images from class folders.
+2. Convert to grayscale and resize to 200x200.
+3. Flatten and normalize pixel values.
+4. Reduce dimensionality with PCA (98% variance).
+5. Train Logistic Regression baseline and SVM classifier.
+6. Tune SVM with GridSearchCV + Stratified K-Fold CV.
+7. Persist trained PCA/SVM bundle and metadata.
+8. Serve browser and API inference using cached models.
 
-95.36% with logistic Regression accuracy on the test set.
-93.73% with Support Vector Machine score on the test set.
-These resutls are very good considering that the data is balanced.
+## Setup
 
-Performance table of the best model:
-
-![accuracy_score](https://user-images.githubusercontent.com/128196839/235717402-f48f8e14-d280-484e-bf54-bb0d675a08f4.jpg)
-
-# Final Output
-
-![brainwebsite](https://user-images.githubusercontent.com/128196839/235728416-fcc2b8cf-de8c-4a15-8b93-a6a31eee88f7.jpg)
-
-In the model we selected the one image for tumor detection its showing the below output:
-
-![website](https://user-images.githubusercontent.com/128196839/235728771-865c8851-0b41-4040-8f7c-56b0ca815e92.jpg)
-
-## Simple Steps:
-
+```bash
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate.fish
+pip install --upgrade pip
 pip install -r requirements.txt
 python app.py
+```
+
+Open:
+
+- Web UI: http://127.0.0.1:5000
+
+## Environment Variables
+
+- FLASK_DEBUG: set 1 for debug mode (default: 0)
+- FORCE_RETRAIN: set 1 to retrain model and overwrite artifacts
+- ENABLE_CLAHE: set 1 to enable CLAHE by default
+- LOW_CONFIDENCE_THRESHOLD: percentage threshold for referral flag (default: 70)
+- MAX_UPLOAD_MB: max upload size in MB (default: 10)
+- MAX_BATCH_SIZE: API batch limit (default: 10)
+- RATE_LIMIT_REQUESTS: max protected requests per window (default: 30)
+- RATE_LIMIT_WINDOW_SECONDS: rate-limit window size (default: 60)
+- ALLOW_CORS_ORIGIN: optional CORS origin value
+- PREDICTION_HISTORY_FILE: path to JSONL history file
+
+## API Endpoints
+
+### POST /api/predict
+
+Single image payload:
+
+```json
+{
+  "image": "<base64_image>",
+  "filename": "scan.jpg",
+  "enable_clahe": false
+}
+```
+
+Batch payload:
+
+```json
+{
+  "images": [
+    { "filename": "scan1.jpg", "data": "<base64_image_1>" },
+    { "filename": "scan2.jpg", "data": "<base64_image_2>" }
+  ],
+  "enable_clahe": true
+}
+```
+
+### GET /api/history
+
+Query params:
+
+- page, per_page
+- class
+- source (web or api)
+- status (success or error)
+- min_confidence, max_confidence
+- low_confidence (true or false)
+- start_date, end_date (ISO format)
+
+Alias: GET /history
+
+### GET /api/metrics
+
+Returns the training report with:
+
+- dataset stats
+- PCA components and explained variance
+- Logistic and SVM metrics
+- confusion matrix
+- CV best score
+- calibration samples
+
+## Visualization Generation
+
+After at least one training run:
+
+```bash
+python generate_visualizations.py
+```
+
+Generated files:
+
+- static/pca_scree_plot.png
+- static/performance_comparison.png
+- static/confusion_matrix.png
+- static/confidence_distribution.png
+- static/calibration_curve.png
+
+## Automated Tests
+
+```bash
+python -m unittest discover -s tests -p 'test_*.py'
+```
+
+## Current Example Metrics (latest run)
+
+From artifacts/training_report.json:
+
+- Logistic Regression accuracy: 84.17%
+- SVM accuracy: 88.33%
+- PCA components retained: 214
+
+## Disclaimer
+
+This tool is for educational and research support. It is not a standalone clinical diagnostic system. Final diagnosis must be made by qualified medical professionals.

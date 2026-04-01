@@ -66,8 +66,13 @@
         <form class="upload-form" action="/result" enctype="multipart/form-data" method="post">
           <label class="input-label" for="image">Select MRI image file</label>
           <input class="file-input" type="file" name="image" id="image" accept="image/*" required>
+          <label class="checkbox-row" for="enhance">
+            <input type="checkbox" id="enhance" name="enhance" value="on">
+            Apply contrast enhancement (CLAHE)
+          </label>
           <button class="btn btn-primary" type="submit">Analyze Image</button>
         </form>
+        <p class="note-text">Maximum upload size: 10 MB. Supported formats: PNG, JPG, JPEG, BMP, TIFF, WEBP.</p>
       </article>
     </section>
   </main>

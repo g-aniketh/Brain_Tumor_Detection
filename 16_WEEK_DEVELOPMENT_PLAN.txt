@@ -141,7 +141,7 @@
 **Result Notes:**
 
 - SVM model trained successfully on ~280 training images across 4 classes.
-- Initial SVM inference achieves 93.73% accuracy on held-out test set.
+- Current SVM run achieves 88.33% accuracy on held-out test set (artifact-backed).
 
 ---
 
@@ -155,8 +155,8 @@
 
 **Result Notes:**
 
-- Selected SVM as primary model due to consistent multiclass boundary separation and practical deployment characteristics.
-- Documented that both models perform well; differences are minor for this dataset size.
+- Logistic Regression baseline achieved 84.17% on the same split.
+- Selected SVM as primary model with better multiclass performance on current run.
 
 ---
 
@@ -327,14 +327,14 @@
 
 **Progress Points:**
 
-- Implement joblib-based model persistence to save trained PCA and SVM artifacts.
-- Create `save_model()` function to export PCA and SVM to `.pkl` files.
-- Add metadata storage: class mapping, image size, and PCA variance threshold.
+- Implemented joblib-based model persistence for PCA + SVM bundle.
+- Added metadata capture: model version, dataset fingerprint, labels, image size.
+- Added training report persistence in `artifacts/training_report.json`.
 
 **Result Notes:**
 
-- Trained model artifacts can be saved and loaded without retraining.
-- Model versioning system enables tracking of different trained versions.
+- Model artifacts now load from disk without retraining on every startup.
+- Version and dataset-fingerprint checks protect against stale model usage.
 
 ---
 
@@ -342,14 +342,14 @@
 
 **Progress Points:**
 
-- Modify Flask startup to check for saved model files before training.
-- Implement fallback retraining if cached model is missing or outdated.
-- Benchmark startup time: training path (~30-50s) vs loaded path (~1-2s).
+- Added startup path to load cached artifacts first.
+- Added fallback retraining when cache is invalid or `FORCE_RETRAIN=1`.
+- Verified cache-hit behavior through repeated startup smoke checks.
 
 **Result Notes:**
 
-- Application startup time reduces from 30+ seconds to <2 seconds with cached model.
-- Deployment and demo startup becomes significantly faster and more professional.
+- Startup is now significantly faster after first training cycle.
+- Demo reliability improved by avoiding repeated full retraining.
 
 ---
 
@@ -359,14 +359,14 @@
 
 **Progress Points:**
 
-- Research and implement CLAHE (Contrast Limited Adaptive Histogram Equalization) filter.
-- Add optional preprocessing toggle to enable/disable enhancement in inference.
-- Test with borderline prediction cases to assess confidence improvement.
+- Implemented optional CLAHE enhancement in preprocessing pipeline.
+- Added web/API control to enable or disable enhancement per request.
+- Connected enhancement state to history logging for traceability.
 
 **Result Notes:**
 
-- Enhanced preprocessing improves contrast in low-quality MRI scans.
-- Confidence scores show measurable improvement on previously ambiguous images.
+- Low-contrast scans can now be processed with enhancement fallback.
+- Enhancement behavior is explicit and auditable in request records.
 
 ---
 
@@ -374,14 +374,14 @@
 
 **Progress Points:**
 
-- Test preprocessing on non-standard image sizes and unusual format variations.
-- Implement graceful degradation for images outside expected dimensions.
-- Add logging for preprocessing steps to aid in debugging upload issues.
+- Added preprocessing and inference timing logs.
+- Hardened decoding path with clear errors for empty/invalid payloads.
+- Added upload-size control with Flask `MAX_CONTENT_LENGTH` enforcement.
 
 **Result Notes:**
 
-- System handles unusual image formats with clear error messages.
-- Preprocessing logs provide visibility into image transformation pipeline.
+- Error states are now predictable and user-facing.
+- Observability improved through timing and structured logs.
 
 ---
 
@@ -391,14 +391,14 @@
 
 **Progress Points:**
 
-- Create new `/api/predict` endpoint accepting JSON requests with base64-encoded images.
-- Implement request schema validation and response serialization.
-- Support single and batch image predictions in standardized JSON format.
+- Implemented `/api/predict` for JSON-based inference.
+- Added support for single-image payloads and response metadata.
+- Added schema checks for missing/invalid JSON image data.
 
 **Result Notes:**
 
-- API returns structured JSON: `{predictions: [{class, confidence}, ...]}`.
-- API compatible with external applications and integration frameworks.
+- API now supports external integration workflows.
+- Response includes class, confidence, threshold flag, and model version.
 
 ---
 
@@ -406,14 +406,14 @@
 
 **Progress Points:**
 
-- Implement batch processing that accepts multiple images in single API call.
-- Add batch result aggregation with per-image success/failure status.
-- Optimize memory usage for batch operations to handle 10+ images.
+- Added batch inference via `images` list payload.
+- Added per-item success/error status in batch response.
+- Enforced configurable batch-size limits (`MAX_BATCH_SIZE`).
 
 **Result Notes:**
 
-- Batch endpoint enables high-throughput screening workflows.
-- Medical institutions can submit multiple MRI scans simultaneously.
+- Batch endpoint supports higher-throughput usage patterns.
+- Failure isolation ensures one bad image does not break full batch.
 
 ---
 
@@ -423,94 +423,93 @@
 
 **Progress Points:**
 
-- Analyze confidence distribution across correct vs incorrect predictions.
-- Implement confidence-based decision thresholding for "refer to specialist" flag.
-- Generate per-class confidence statistics and confidence calibration curves.
+- Added low-confidence triage flag with configurable threshold.
+- Stored calibration samples in training report for analysis.
+- Added confidence-aware warning in result page UI.
 
 **Result Notes:**
 
-- System can flag low-confidence predictions for mandatory expert review.
-- Confidence calibration analysis shows reliability of probability estimates.
+- Users now get explicit caution on low-confidence outputs.
+- Calibration-ready data is persisted for reliability analysis.
 
 ---
 
-### Week 14 - Part B: Prediction Analysis & Feature Importance
+### Week 14 - Part B: Prediction Analysis & Feature Insights
 
 **Progress Points:**
 
-- Create visualization dashboard showing prediction breakdown by class and confidence.
-- Implement confusion matrix generation and class-wise performance metrics.
-- Add feature importance ranking based on PCA component contributions.
+- Upgraded visualization script to read artifact-backed metrics.
+- Added confusion matrix, confidence distribution, and calibration plots.
+- Kept PCA scree and performance comparison plots in same workflow.
 
 **Result Notes:**
 
-- Interactive dashboard enables understanding of model decisions across dataset.
-- Feature analysis reveals which image characteristics drive tumor detection.
+- Explainability artifacts are reproducible from current model state.
+- Analysis outputs are presentation-ready under `static/`.
 
 ---
 
-## Week 15: Database Integration & Prediction History
+## Week 15: File-Based Prediction History & Retrieval
 
-### Week 15 - Part A: Database Schema & Setup
+### Week 15 - Part A: Persistent History Logging
 
 **Progress Points:**
 
-- Design and create SQLite database schema for prediction history.
-- Store: prediction ID, timestamp, uploaded filename, predicted class, confidence, user ID.
-- Implement database connection pooling for Flask application.
+- Implemented JSONL-based history persistence (adapted from DB plan).
+- Logged timestamp, source, status, class, confidence, and latency.
+- Added secure filename sanitization before record storage.
 
 **Result Notes:**
 
-- Prediction history is persistently recorded with full metadata.
-- Database enables audit trail and outcome tracking for clinical use.
+- Prediction events are now auditable without database dependency.
+- History storage remains lightweight and easy to export.
 
 ---
 
-### Week 15 - Part B: History Tracking & Retrieval API
+### Week 15 - Part B: History Retrieval API
 
 **Progress Points:**
 
-- Implement automatic prediction logging after each inference.
-- Create `/history` endpoint with filtering by date range, class, and confidence range.
-- Add prediction search and retrieval functionality with pagination support.
+- Implemented `/api/history` with filtering options.
+- Added pagination controls (`page`, `per_page`) and confidence/date filters.
+- Added `/history` alias for compatibility with report wording.
 
 **Result Notes:**
 
-- Users can review past predictions and track screening outcomes.
-- Database analytics enable institution-level epidemiological tracking.
+- Users can inspect and filter previous inferences reliably.
+- Retrieval API supports reporting and downstream analytics.
 
 ---
 
-## Week 16: Production Deployment & Final Polish
+## Week 16: Production Hardening & Validation
 
-### Week 16 - Part A: Production Hardening
+### Week 16 - Part A: Runtime Security Hardening
 
 **Progress Points:**
 
-- Disable Flask debug mode and configure for production environment.
-- Implement environment-variable based configuration (flask secret key, database path, etc.).
-- Add security headers, input sanitization, and CORS policies.
+- Moved runtime behavior to environment-driven config.
+- Disabled debug by default (`FLASK_DEBUG=0`).
+- Added security headers and in-memory rate limiting for protected routes.
 
 **Result Notes:**
 
-- Application is configured for secure production deployment.
-- Environment configuration enables different settings for dev/staging/prod.
+- Runtime defaults are safer for non-development execution.
+- Abuse resistance improved for upload and prediction endpoints.
 
 ---
 
-### Week 16 - Part B: Deployment, Documentation & Handoff
+### Week 16 - Part B: Test and Release Readiness
 
 **Progress Points:**
 
-- Create complete deployment guide with setup instructions and system requirements.
-- Finalize API documentation with examples for external integration.
-- Perform full regression testing across all features and edge cases.
+- Added automated unit/integration tests under `tests/`.
+- Added API/docs updates and operational commands in README.
+- Executed smoke checks for web, API, history, and metrics endpoints.
 
 **Result Notes:**
 
-- Project is production-ready and fully documented for future maintenance.
-- System is stable and ready for institutional deployment or research publication.
-- **Complete: 16-week development cycle finished with professional-grade system.**
+- Regression safety improved through repeatable tests.
+- Project is now aligned with 16-week implementation goals.
 
 ---
 
@@ -522,17 +521,17 @@
 | ML Core         | 4-5   | PCA, SVM Training                     | ✅ COMPLETED |
 | Web Integration | 6-9   | Flask, Frontend, Integration, Testing | ✅ COMPLETED |
 | Polish          | 10    | Refactoring, Dependencies             | ✅ COMPLETED |
-| Enhancement     | 11-12 | Persistence, Advanced Processing      | Planned      |
-| Expansion       | 13-14 | API, Explainability                   | Planned      |
-| Production      | 15-16 | Database, Deployment                  | Planned      |
+| Enhancement     | 11-12 | Persistence, Advanced Processing      | ✅ COMPLETED |
+| Expansion       | 13-14 | API, Explainability                   | ✅ COMPLETED |
+| Production      | 15-16 | History, Security, Validation         | ✅ COMPLETED |
 
 ---
 
 ## Key Milestones
 
-- **End of Week 5**: SVM model trained and validated (93.73% accuracy)
+- **End of Week 5**: SVM model trained and validated (current run: 88.33% accuracy)
 - **End of Week 9**: Fully functional web application with error handling
 - **End of Week 10**: Production-grade codebase ready for viva/demo
-- **End of Week 11**: Fast startup with cached models (<2s)
+- **End of Week 11**: Fast startup with cached model loading
 - **End of Week 13**: API-ready for institutional integration
-- **End of Week 16**: Enterprise-deployment ready system
+- **End of Week 16**: Security-hardened, test-backed implementation complete
