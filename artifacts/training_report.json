@@ -1,227 +1,210 @@
 {
-  "model_version": "2.1.1",
-  "created_at": "2026-04-02T01:01:32.288659+00:00",
+  "model_version": "2.3.0",
+  "created_at": "2026-04-02T01:33:49.650656+00:00",
   "random_state": 10,
   "test_size": 0.3,
-  "pca_variance": 0.98,
-  "pca_components": 214,
+  "pca_variance": 0.96,
+  "pca_components": 197,
   "pca_explained_variance_ratio": [
-    0.15688832104206085,
-    0.1053973063826561,
-    0.04229661449790001,
-    0.034886229783296585,
-    0.030078982934355736,
-    0.024263545870780945,
-    0.020677827298641205,
-    0.01982961967587471,
-    0.01765615865588188,
-    0.016560418531298637,
-    0.013844676315784454,
-    0.013309855945408344,
-    0.012950573116540909,
-    0.011640654876828194,
-    0.0112761240452528,
-    0.010728037916123867,
-    0.009803377091884613,
-    0.009321854449808598,
-    0.009197498671710491,
-    0.008762875571846962,
-    0.008525906130671501,
-    0.008228982798755169,
-    0.007745640818029642,
-    0.007593849673867226,
-    0.0074963876977562904,
-    0.007357625290751457,
-    0.006849552504718304,
-    0.006655197124928236,
-    0.006479150149971247,
-    0.0062352633103728294,
-    0.0060740141198039055,
-    0.005715314298868179,
-    0.005640128627419472,
-    0.0055876681581139565,
-    0.005408424884080887,
-    0.005273128394037485,
-    0.005027313716709614,
-    0.004995591007173061,
-    0.004917546175420284,
-    0.004757787100970745,
-    0.0046053556725382805,
-    0.004418467171490192,
-    0.004390349145978689,
-    0.004325288813561201,
-    0.004262091126292944,
-    0.004140277858823538,
-    0.004052365198731422,
-    0.003971766214817762,
-    0.0039036553353071213,
-    0.0038260319270193577,
-    0.003794345073401928,
-    0.003714571939781308,
-    0.003661897499114275,
-    0.003588880179449916,
-    0.0034930375404655933,
-    0.0034277504310011864,
-    0.0033318998757749796,
-    0.003300362965092063,
-    0.0032892923336476088,
-    0.0031564089003950357,
-    0.0031122895888984203,
-    0.0030795640777796507,
-    0.0030286589171737432,
-    0.0029830257408320904,
-    0.0029718363657593727,
-    0.0028900625184178352,
-    0.0028349028434604406,
-    0.0027645074296742678,
-    0.002758260350674391,
-    0.002695816569030285,
-    0.002628598129376769,
-    0.0025685857981443405,
-    0.0025471008848398924,
-    0.00252361549064517,
-    0.0024992311373353004,
-    0.002496736589819193,
-    0.002387730637565255,
-    0.002366367494687438,
-    0.002333987969905138,
-    0.002305475762113929,
-    0.0022788557689636946,
-    0.0022575247567147017,
-    0.0022159540094435215,
-    0.0021470736246556044,
-    0.0021132074762135744,
-    0.002097001764923334,
-    0.0020878855139017105,
-    0.0020408567506819963,
-    0.001960721332579851,
-    0.001915522268973291,
-    0.0018828936154022813,
-    0.0018642863724380732,
-    0.0018579451134428382,
-    0.0018373876810073853,
-    0.0018120083259418607,
-    0.001794531592167914,
-    0.0017602365696802735,
-    0.0017385086975991726,
-    0.0017238922882825136,
-    0.001685335417278111,
-    0.0016448048409074545,
-    0.0016306129982694983,
-    0.0015851911157369614,
-    0.001570718945004046,
-    0.0015474699903279543,
-    0.0015339817618951201,
-    0.0015254623722285032,
-    0.0015141566982492805,
-    0.0015030427603051066,
-    0.0014788215048611164,
-    0.0014721471816301346,
-    0.0014366207178682089,
-    0.0014133068034425378,
-    0.0013939323835074902,
-    0.001378430868498981,
-    0.0013477362226694822,
-    0.00133763556368649,
-    0.0013235622318461537,
-    0.0013068292755633593,
-    0.001286305021494627,
-    0.001274414942599833,
-    0.0012489412911236286,
-    0.001239678356796503,
-    0.001225861138664186,
-    0.0012106560170650482,
-    0.001203167368657887,
-    0.0011990017956122756,
-    0.001172229298390448,
-    0.001157376216724515,
-    0.0011454670457169414,
-    0.001142442342825234,
-    0.0011263871565461159,
-    0.0011167207267135382,
-    0.001100362977012992,
-    0.0010782217141240835,
-    0.0010750261135399342,
-    0.0010641805129125714,
-    0.001050310442224145,
-    0.0010469311382621527,
-    0.0010392661206424236,
-    0.0010278992122039199,
-    0.0010049233678728342,
-    0.0009876515250653028,
-    0.0009857665281742811,
-    0.0009773991769179702,
-    0.0009696029592305422,
-    0.000964694598224014,
-    0.000948036671616137,
-    0.0009431352955289185,
-    0.0009316528448835015,
-    0.0009169494151137769,
-    0.0009061245946213603,
-    0.0009053056128323078,
-    0.0008913345518521965,
-    0.0008786030812188983,
-    0.0008607443305663764,
-    0.0008590805227868259,
-    0.0008504517027176917,
-    0.0008440316305495799,
-    0.0008284141076728702,
-    0.0008226994541473687,
-    0.0008100460399873555,
-    0.0008062539855018258,
-    0.0007948287529870868,
-    0.0007908263360150158,
-    0.0007884370861575007,
-    0.0007837260491214693,
-    0.0007722984883002937,
-    0.0007564140250906348,
-    0.0007496728212572634,
-    0.0007380620809271932,
-    0.0007328377105295658,
-    0.0007275317329913378,
-    0.0007208805764093995,
-    0.0007118520443327725,
-    0.0007059102645143867,
-    0.0007017801399342716,
-    0.0006903124158270657,
-    0.0006861135479994118,
-    0.00068479630863294,
-    0.0006724176928400993,
-    0.0006637802580371499,
-    0.0006581842317245901,
-    0.0006573249702341855,
-    0.0006467843777500093,
-    0.0006406543543562293,
-    0.0006365235894918442,
-    0.0006316540529951453,
-    0.0006192573346197605,
-    0.0006122443010099232,
-    0.0006081067840568721,
-    0.0005995198735035956,
-    0.0005945165175944567,
-    0.000587554182857275,
-    0.0005841082893311977,
-    0.0005741663626395166,
-    0.0005682362825609744,
-    0.0005644027260132134,
-    0.0005617763963527977,
-    0.0005533596267923713,
-    0.0005487842718139291,
-    0.0005377980414777994,
-    0.0005353179294615984,
-    0.0005232392577454448,
-    0.0005200798623263836,
-    0.0005123153096064925,
-    0.00050759082660079,
-    0.0005027810111641884,
-    0.0004997175419703126,
-    0.0004951685550622642,
-    0.00048816698836162686,
-    0.0004788994265254587,
-    0.000474024738650769,
-    0.00047193924547173083
+    0.15409061312675476,
+    0.07042840868234634,
+    0.05121645703911781,
+    0.0449012853205204,
+    0.028074409812688828,
+    0.026570426300168037,
+    0.02141459472477436,
+    0.018815085291862488,
+    0.018061187118291855,
+    0.01591610349714756,
+    0.015336081385612488,
+    0.013494121842086315,
+    0.012479754164814949,
+    0.011142867617309093,
+    0.010653853416442871,
+    0.010220460593700409,
+    0.009855934418737888,
+    0.009719292633235455,
+    0.008996058255434036,
+    0.008647539652884007,
+    0.008081315085291862,
+    0.007940526120364666,
+    0.007499907165765762,
+    0.007272274699062109,
+    0.007022338453680277,
+    0.006988389417529106,
+    0.0068193161860108376,
+    0.006400165148079395,
+    0.0061287530697882175,
+    0.005869057960808277,
+    0.005803931970149279,
+    0.005724901799112558,
+    0.0056126718409359455,
+    0.005435390863567591,
+    0.005342260468751192,
+    0.00514292111620307,
+    0.005002673249691725,
+    0.004885601811110973,
+    0.004701619036495686,
+    0.004629947245121002,
+    0.00455532968044281,
+    0.00452549709007144,
+    0.004473306238651276,
+    0.004265344236046076,
+    0.004118580836802721,
+    0.004054415971040726,
+    0.0039607989601790905,
+    0.00391088193282485,
+    0.003867847379297018,
+    0.0038037006743252277,
+    0.003694978542625904,
+    0.0036418058443814516,
+    0.0035837371833622456,
+    0.0035174675285816193,
+    0.003424295224249363,
+    0.0033793002367019653,
+    0.003298388794064522,
+    0.0032685818150639534,
+    0.0032152540516108274,
+    0.0031195657793432474,
+    0.0030963923782110214,
+    0.0030478492844849825,
+    0.0029503244441002607,
+    0.0029089704621583223,
+    0.0028682167176157236,
+    0.002813693368807435,
+    0.002780384849756956,
+    0.0027359675150364637,
+    0.002707274165004492,
+    0.002652401104569435,
+    0.0026102829724550247,
+    0.0025914146099239588,
+    0.0025583121459931135,
+    0.002545938827097416,
+    0.0024328900035470724,
+    0.002430517226457596,
+    0.00238048960454762,
+    0.002352955052629113,
+    0.002344332169741392,
+    0.0022880919277668,
+    0.002261954825371504,
+    0.002243851311504841,
+    0.0022128219716250896,
+    0.0021917689591646194,
+    0.002172475680708885,
+    0.00216454709880054,
+    0.002126548206433654,
+    0.0020647328346967697,
+    0.002039028564468026,
+    0.0020114711951464415,
+    0.001992930890992284,
+    0.001976076979190111,
+    0.0019583781249821186,
+    0.0019149122526869178,
+    0.0018957284046337008,
+    0.0018670761492103338,
+    0.0018386355368420482,
+    0.001828734646551311,
+    0.0017982418648898602,
+    0.0017695333808660507,
+    0.00175068574026227,
+    0.0017168230842798948,
+    0.0017104108119383454,
+    0.0016730539500713348,
+    0.0016631294274702668,
+    0.0016509037232026458,
+    0.0016275307862088084,
+    0.0016152533935382962,
+    0.001600912306457758,
+    0.001586565631441772,
+    0.0015433459775522351,
+    0.001525979838334024,
+    0.001514432136900723,
+    0.0014874677872285247,
+    0.0014723095810040832,
+    0.001464292174205184,
+    0.001455018762499094,
+    0.0014187146443873644,
+    0.0014109566109254956,
+    0.0014022618997842073,
+    0.0013920944184064865,
+    0.001379302702844143,
+    0.0013778384309262037,
+    0.0013543468667194247,
+    0.001340812654234469,
+    0.001334578264504671,
+    0.0013130337465554476,
+    0.001294438843615353,
+    0.0012860281858593225,
+    0.0012720519443973899,
+    0.001257662894204259,
+    0.001253414899110794,
+    0.001243559061549604,
+    0.0012371799675747752,
+    0.0012221930082887411,
+    0.001205870765261352,
+    0.0011968569597229362,
+    0.0011814655736088753,
+    0.001160058076493442,
+    0.0011562935542315245,
+    0.001151967328041792,
+    0.0011434468906372786,
+    0.001124794245697558,
+    0.001112135243602097,
+    0.001106441835872829,
+    0.0011025184066966176,
+    0.001092012389563024,
+    0.0010821875184774399,
+    0.001070976140908897,
+    0.001060713897459209,
+    0.0010557483183220029,
+    0.0010356471175327897,
+    0.0010330071672797203,
+    0.001015865826047957,
+    0.0010101832449436188,
+    0.0010069077834486961,
+    0.0009983512572944164,
+    0.0009918268769979477,
+    0.0009843935258686543,
+    0.000978862983174622,
+    0.0009695584885776043,
+    0.0009638343472033739,
+    0.0009536544093862176,
+    0.0009490308002568781,
+    0.0009456102852709591,
+    0.0009414702653884888,
+    0.0009259522194042802,
+    0.0009218534105457366,
+    0.0009104228811338544,
+    0.0009061885648407042,
+    0.0008996112737804651,
+    0.0008955799276009202,
+    0.0008889460004866123,
+    0.0008796293404884636,
+    0.0008702875929884613,
+    0.000863319612108171,
+    0.0008490223553963006,
+    0.0008432181784883142,
+    0.0008332054712809622,
+    0.0008240299648605287,
+    0.0008168214117176831,
+    0.0008054006611928344,
+    0.0008022863767109811,
+    0.000797552231233567,
+    0.0007937861955724657,
+    0.0007823987980373204,
+    0.0007802466279827058,
+    0.0007694408413954079,
+    0.0007660937844775617,
+    0.0007651878404431045,
+    0.0007566506392322481,
+    0.0007451873389072716,
+    0.0007355966954492033,
+    0.0007280275458469987,
+    0.0007188125746324658,
+    0.0007175016799010336,
+    0.0007151796598918736
   ],
-  "explained_variance_sum": 0.9803720116615295,
+  "explained_variance_sum": 0.9603814482688904,
   "dataset": {
     "total_images": 399,
     "train_images": 279,
@@ -232,7 +215,8 @@
       "pituitary_tumor": 100,
       "meningioma_tumor": 99,
       "glioma_tumor": 100
-    }
+    },
+    "preprocessing_mode": "equalize"
   },
   "augmentation": {
     "enabled": false,
@@ -243,32 +227,38 @@
     "output_samples": 279
   },
   "baseline_logistic_regression": {
+    "search_space_size": 1,
+    "best_params": {
+      "C": 0.1,
+      "class_weight": null
+    },
+    "cv_best_accuracy": 0.938961038961039,
     "metrics": {
-      "accuracy": 0.8416666666666667,
-      "precision_macro": 0.8471529038112522,
-      "recall_macro": 0.8416666666666667,
-      "f1_macro": 0.8387614932978841
+      "accuracy": 0.9166666666666666,
+      "precision_macro": 0.9248805256869773,
+      "recall_macro": 0.9166666666666667,
+      "f1_macro": 0.9169939565754923
     }
   },
   "svm": {
-    "search_space_size": 72,
+    "search_space_size": 1,
     "best_params": {
       "kernel": "rbf",
-      "C": 10.0,
-      "gamma": 0.001,
+      "C": 2.0,
+      "gamma": 0.002,
       "class_weight": null
     },
-    "cv_best_accuracy": 0.9316883116883117,
+    "cv_best_accuracy": 0.9247402597402598,
     "metrics": {
-      "accuracy": 0.8833333333333333,
-      "precision_macro": 0.8972532136793597,
-      "recall_macro": 0.8833333333333333,
-      "f1_macro": 0.8830187738139083
+      "accuracy": 0.95,
+      "precision_macro": 0.953314393939394,
+      "recall_macro": 0.9500000000000001,
+      "f1_macro": 0.9489701159055999
     },
     "confusion_matrix": [
       [
-        23,
-        4,
+        25,
+        2,
         1,
         2
       ],
@@ -280,741 +270,741 @@
       ],
       [
         0,
-        2,
-        26,
-        2
+        0,
+        29,
+        1
       ],
       [
         0,
-        2,
-        1,
-        27
+        0,
+        0,
+        30
       ]
     ]
   },
   "calibration_samples": [
     {
-      "confidence": 0.9600185006438928,
+      "confidence": 0.9978610479037636,
       "correct": 1,
       "predicted_class": "pituitary_tumor",
       "true_class": "pituitary_tumor"
     },
     {
-      "confidence": 0.6684507214633979,
+      "confidence": 0.7666195034117762,
       "correct": 1,
       "predicted_class": "no_tumor",
       "true_class": "no_tumor"
     },
     {
-      "confidence": 0.9938008845626202,
+      "confidence": 0.9999770858670588,
       "correct": 1,
       "predicted_class": "no_tumor",
       "true_class": "no_tumor"
     },
     {
-      "confidence": 0.9893032119487315,
+      "confidence": 0.9998747285215772,
       "correct": 1,
       "predicted_class": "no_tumor",
       "true_class": "no_tumor"
     },
     {
-      "confidence": 0.9628539119908016,
+      "confidence": 0.9995238393563983,
       "correct": 1,
       "predicted_class": "meningioma_tumor",
       "true_class": "meningioma_tumor"
     },
     {
-      "confidence": 0.9803923998958258,
+      "confidence": 0.999552658707269,
       "correct": 1,
       "predicted_class": "no_tumor",
       "true_class": "no_tumor"
     },
     {
-      "confidence": 0.9865589337000383,
+      "confidence": 0.9997638099959043,
       "correct": 1,
       "predicted_class": "pituitary_tumor",
       "true_class": "pituitary_tumor"
     },
     {
-      "confidence": 0.9789376389906722,
+      "confidence": 0.9990939005466105,
       "correct": 1,
       "predicted_class": "pituitary_tumor",
       "true_class": "pituitary_tumor"
     },
     {
-      "confidence": 0.9900150298582673,
+      "confidence": 0.9999015733235034,
       "correct": 1,
       "predicted_class": "pituitary_tumor",
       "true_class": "pituitary_tumor"
     },
     {
-      "confidence": 0.9897723486320176,
+      "confidence": 0.9998945148847981,
       "correct": 1,
       "predicted_class": "no_tumor",
       "true_class": "no_tumor"
     },
     {
-      "confidence": 0.9929539079775989,
+      "confidence": 0.9999556240132638,
       "correct": 1,
       "predicted_class": "pituitary_tumor",
       "true_class": "pituitary_tumor"
     },
     {
-      "confidence": 0.9943397561799819,
+      "confidence": 0.9987892450743333,
       "correct": 1,
       "predicted_class": "pituitary_tumor",
       "true_class": "pituitary_tumor"
     },
     {
-      "confidence": 0.9940250698321219,
+      "confidence": 0.9999133243142629,
       "correct": 1,
       "predicted_class": "pituitary_tumor",
       "true_class": "pituitary_tumor"
     },
     {
-      "confidence": 0.9834742898007042,
+      "confidence": 0.9999999974964714,
       "correct": 1,
       "predicted_class": "glioma_tumor",
       "true_class": "glioma_tumor"
     },
     {
-      "confidence": 0.9897269412279521,
+      "confidence": 0.9998901680341142,
       "correct": 1,
       "predicted_class": "no_tumor",
       "true_class": "no_tumor"
     },
     {
-      "confidence": 0.8513668075073408,
+      "confidence": 0.999999547395124,
       "correct": 1,
       "predicted_class": "glioma_tumor",
       "true_class": "glioma_tumor"
     },
     {
-      "confidence": 0.990975776643028,
+      "confidence": 0.9628115725276515,
       "correct": 1,
       "predicted_class": "pituitary_tumor",
       "true_class": "pituitary_tumor"
     },
     {
-      "confidence": 0.5476978350479377,
+      "confidence": 0.998705374221528,
       "correct": 1,
       "predicted_class": "meningioma_tumor",
       "true_class": "meningioma_tumor"
     },
     {
-      "confidence": 0.7342137881435677,
+      "confidence": 0.9619144776136793,
       "correct": 1,
       "predicted_class": "meningioma_tumor",
       "true_class": "meningioma_tumor"
     },
     {
-      "confidence": 0.932962597038253,
+      "confidence": 0.9999998854763005,
       "correct": 1,
       "predicted_class": "glioma_tumor",
       "true_class": "glioma_tumor"
     },
     {
-      "confidence": 0.9171546721254927,
-      "correct": 0,
-      "predicted_class": "glioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.9354695230895722,
-      "correct": 1,
-      "predicted_class": "glioma_tumor",
-      "true_class": "glioma_tumor"
-    },
-    {
-      "confidence": 0.9848794547983732,
-      "correct": 1,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "pituitary_tumor"
-    },
-    {
-      "confidence": 0.4554399621544469,
-      "correct": 0,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "no_tumor"
-    },
-    {
-      "confidence": 0.9897723486320176,
-      "correct": 1,
-      "predicted_class": "no_tumor",
-      "true_class": "no_tumor"
-    },
-    {
-      "confidence": 0.6788986779676172,
-      "correct": 0,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "no_tumor"
-    },
-    {
-      "confidence": 0.9611512274306308,
-      "correct": 1,
-      "predicted_class": "glioma_tumor",
-      "true_class": "glioma_tumor"
-    },
-    {
-      "confidence": 0.985455526810558,
-      "correct": 1,
-      "predicted_class": "no_tumor",
-      "true_class": "no_tumor"
-    },
-    {
-      "confidence": 0.650764709562019,
-      "correct": 0,
-      "predicted_class": "glioma_tumor",
-      "true_class": "no_tumor"
-    },
-    {
-      "confidence": 0.9960219819516875,
+      "confidence": 0.8908155537244499,
       "correct": 1,
       "predicted_class": "meningioma_tumor",
       "true_class": "meningioma_tumor"
     },
     {
-      "confidence": 0.9916538567608336,
-      "correct": 1,
-      "predicted_class": "no_tumor",
-      "true_class": "no_tumor"
-    },
-    {
-      "confidence": 0.9862913795854591,
-      "correct": 1,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "pituitary_tumor"
-    },
-    {
-      "confidence": 0.5873008213810021,
-      "correct": 1,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.9902482829331973,
+      "confidence": 0.9999999961190699,
       "correct": 1,
       "predicted_class": "glioma_tumor",
       "true_class": "glioma_tumor"
     },
     {
-      "confidence": 0.9988734801615041,
+      "confidence": 0.9998844011606703,
       "correct": 1,
       "predicted_class": "pituitary_tumor",
       "true_class": "pituitary_tumor"
     },
     {
-      "confidence": 0.9902386423341464,
+      "confidence": 0.9988945722970108,
       "correct": 1,
       "predicted_class": "no_tumor",
       "true_class": "no_tumor"
     },
     {
-      "confidence": 0.5649335325822303,
+      "confidence": 0.9998945148847981,
+      "correct": 1,
+      "predicted_class": "no_tumor",
+      "true_class": "no_tumor"
+    },
+    {
+      "confidence": 0.4481995094981891,
       "correct": 0,
       "predicted_class": "pituitary_tumor",
       "true_class": "no_tumor"
     },
     {
-      "confidence": 0.9846186518506831,
+      "confidence": 0.9999998157741701,
       "correct": 1,
       "predicted_class": "glioma_tumor",
       "true_class": "glioma_tumor"
     },
     {
-      "confidence": 0.9768916703480697,
-      "correct": 1,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "pituitary_tumor"
-    },
-    {
-      "confidence": 0.9875146993647148,
-      "correct": 1,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.9934557871333924,
-      "correct": 1,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "pituitary_tumor"
-    },
-    {
-      "confidence": 0.9912428054383456,
-      "correct": 1,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "pituitary_tumor"
-    },
-    {
-      "confidence": 0.9237332288927046,
-      "correct": 1,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.7905446663149835,
-      "correct": 1,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.9951943626519321,
-      "correct": 1,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "pituitary_tumor"
-    },
-    {
-      "confidence": 0.9914394716789476,
+      "confidence": 0.7600731923119759,
       "correct": 1,
       "predicted_class": "no_tumor",
       "true_class": "no_tumor"
     },
     {
-      "confidence": 0.9533327213203499,
+      "confidence": 0.9998791159635317,
       "correct": 1,
       "predicted_class": "no_tumor",
       "true_class": "no_tumor"
     },
     {
-      "confidence": 0.9654336706793887,
+      "confidence": 0.9999933710147062,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.9999381740566338,
+      "correct": 1,
+      "predicted_class": "no_tumor",
+      "true_class": "no_tumor"
+    },
+    {
+      "confidence": 0.9986077040525755,
+      "correct": 1,
+      "predicted_class": "pituitary_tumor",
+      "true_class": "pituitary_tumor"
+    },
+    {
+      "confidence": 0.9892503593047512,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.9999997556627315,
       "correct": 1,
       "predicted_class": "glioma_tumor",
       "true_class": "glioma_tumor"
     },
     {
-      "confidence": 0.9924679160577878,
+      "confidence": 0.9996343746901499,
+      "correct": 1,
+      "predicted_class": "pituitary_tumor",
+      "true_class": "pituitary_tumor"
+    },
+    {
+      "confidence": 0.9999086299410463,
+      "correct": 1,
+      "predicted_class": "no_tumor",
+      "true_class": "no_tumor"
+    },
+    {
+      "confidence": 0.8493907177580778,
+      "correct": 1,
+      "predicted_class": "no_tumor",
+      "true_class": "no_tumor"
+    },
+    {
+      "confidence": 0.9999993944838477,
+      "correct": 1,
+      "predicted_class": "glioma_tumor",
+      "true_class": "glioma_tumor"
+    },
+    {
+      "confidence": 0.9980717881815302,
+      "correct": 1,
+      "predicted_class": "pituitary_tumor",
+      "true_class": "pituitary_tumor"
+    },
+    {
+      "confidence": 0.9999888269911775,
       "correct": 1,
       "predicted_class": "meningioma_tumor",
       "true_class": "meningioma_tumor"
     },
     {
-      "confidence": 0.9461294682380929,
+      "confidence": 0.9972596444664518,
+      "correct": 1,
+      "predicted_class": "pituitary_tumor",
+      "true_class": "pituitary_tumor"
+    },
+    {
+      "confidence": 0.9997331915985901,
+      "correct": 1,
+      "predicted_class": "pituitary_tumor",
+      "true_class": "pituitary_tumor"
+    },
+    {
+      "confidence": 0.9994637882081628,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.9963536502748037,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.9997453412985807,
+      "correct": 1,
+      "predicted_class": "pituitary_tumor",
+      "true_class": "pituitary_tumor"
+    },
+    {
+      "confidence": 0.9999222644844579,
+      "correct": 1,
+      "predicted_class": "no_tumor",
+      "true_class": "no_tumor"
+    },
+    {
+      "confidence": 0.7006235782413626,
+      "correct": 1,
+      "predicted_class": "no_tumor",
+      "true_class": "no_tumor"
+    },
+    {
+      "confidence": 0.9999999228818431,
+      "correct": 1,
+      "predicted_class": "glioma_tumor",
+      "true_class": "glioma_tumor"
+    },
+    {
+      "confidence": 0.9999928933446636,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.6897453324024557,
       "correct": 0,
       "predicted_class": "pituitary_tumor",
       "true_class": "no_tumor"
     },
     {
-      "confidence": 0.8103191506474061,
+      "confidence": 0.5959841177907016,
       "correct": 1,
       "predicted_class": "glioma_tumor",
       "true_class": "glioma_tumor"
     },
     {
-      "confidence": 0.7345461718324768,
-      "correct": 0,
-      "predicted_class": "pituitary_tumor",
+      "confidence": 0.9963942095789112,
+      "correct": 1,
+      "predicted_class": "glioma_tumor",
       "true_class": "glioma_tumor"
     },
     {
-      "confidence": 0.9692345405173004,
-      "correct": 1,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "pituitary_tumor"
-    },
-    {
-      "confidence": 0.997349492830456,
+      "confidence": 0.998691079855239,
       "correct": 1,
       "predicted_class": "pituitary_tumor",
       "true_class": "pituitary_tumor"
     },
     {
-      "confidence": 0.9900776229307634,
-      "correct": 1,
-      "predicted_class": "glioma_tumor",
-      "true_class": "glioma_tumor"
-    },
-    {
-      "confidence": 0.9892418962784173,
+      "confidence": 0.9998228011250426,
       "correct": 1,
       "predicted_class": "pituitary_tumor",
       "true_class": "pituitary_tumor"
     },
     {
-      "confidence": 0.987133455756859,
-      "correct": 1,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.988705712233596,
-      "correct": 1,
-      "predicted_class": "no_tumor",
-      "true_class": "no_tumor"
-    },
-    {
-      "confidence": 0.9366801241075848,
+      "confidence": 0.9999999844026867,
       "correct": 1,
       "predicted_class": "glioma_tumor",
       "true_class": "glioma_tumor"
     },
     {
-      "confidence": 0.9900102872065748,
-      "correct": 1,
-      "predicted_class": "no_tumor",
-      "true_class": "no_tumor"
-    },
-    {
-      "confidence": 0.9736526008388531,
-      "correct": 0,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "glioma_tumor"
-    },
-    {
-      "confidence": 0.9837684032457024,
-      "correct": 1,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.7782674466984607,
-      "correct": 1,
-      "predicted_class": "no_tumor",
-      "true_class": "no_tumor"
-    },
-    {
-      "confidence": 0.9863124440833138,
-      "correct": 1,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.7480965920287265,
-      "correct": 1,
-      "predicted_class": "glioma_tumor",
-      "true_class": "glioma_tumor"
-    },
-    {
-      "confidence": 0.9902892215203587,
-      "correct": 1,
-      "predicted_class": "no_tumor",
-      "true_class": "no_tumor"
-    },
-    {
-      "confidence": 0.5309250310812162,
-      "correct": 0,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.5673400763504817,
-      "correct": 0,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.7742152457783639,
-      "correct": 1,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.9860085311384004,
-      "correct": 1,
-      "predicted_class": "glioma_tumor",
-      "true_class": "glioma_tumor"
-    },
-    {
-      "confidence": 0.9923866110788007,
-      "correct": 1,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.9989280558112836,
-      "correct": 1,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.963202124752473,
-      "correct": 1,
-      "predicted_class": "glioma_tumor",
-      "true_class": "glioma_tumor"
-    },
-    {
-      "confidence": 0.9058399091211962,
-      "correct": 1,
-      "predicted_class": "glioma_tumor",
-      "true_class": "glioma_tumor"
-    },
-    {
-      "confidence": 0.9881108197066871,
-      "correct": 1,
-      "predicted_class": "no_tumor",
-      "true_class": "no_tumor"
-    },
-    {
-      "confidence": 0.8519695962510538,
-      "correct": 1,
-      "predicted_class": "glioma_tumor",
-      "true_class": "glioma_tumor"
-    },
-    {
-      "confidence": 0.9946275480694143,
-      "correct": 1,
-      "predicted_class": "glioma_tumor",
-      "true_class": "glioma_tumor"
-    },
-    {
-      "confidence": 0.9908854545076317,
+      "confidence": 0.9852401385741147,
       "correct": 1,
       "predicted_class": "pituitary_tumor",
       "true_class": "pituitary_tumor"
     },
     {
-      "confidence": 0.9765420117093225,
+      "confidence": 0.9892423760730029,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.9999200663549204,
       "correct": 1,
       "predicted_class": "no_tumor",
       "true_class": "no_tumor"
     },
     {
-      "confidence": 0.963844961589895,
+      "confidence": 0.9999999772055015,
       "correct": 1,
       "predicted_class": "glioma_tumor",
       "true_class": "glioma_tumor"
     },
     {
-      "confidence": 0.9845037232685261,
-      "correct": 1,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.7503784554463387,
-      "correct": 0,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "no_tumor"
-    },
-    {
-      "confidence": 0.6169977788423422,
-      "correct": 1,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "pituitary_tumor"
-    },
-    {
-      "confidence": 0.9558709248234164,
-      "correct": 1,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.6959213403650183,
-      "correct": 1,
-      "predicted_class": "glioma_tumor",
-      "true_class": "glioma_tumor"
-    },
-    {
-      "confidence": 0.9918357218048995,
+      "confidence": 0.9999088989977548,
       "correct": 1,
       "predicted_class": "no_tumor",
       "true_class": "no_tumor"
     },
     {
-      "confidence": 0.9843381405738326,
+      "confidence": 0.7795014003248577,
       "correct": 1,
       "predicted_class": "glioma_tumor",
       "true_class": "glioma_tumor"
     },
     {
-      "confidence": 0.9091965170595516,
+      "confidence": 0.9999911177109565,
       "correct": 1,
       "predicted_class": "meningioma_tumor",
       "true_class": "meningioma_tumor"
     },
     {
-      "confidence": 0.9841791020082447,
-      "correct": 1,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.9609791257331257,
-      "correct": 1,
-      "predicted_class": "glioma_tumor",
-      "true_class": "glioma_tumor"
-    },
-    {
-      "confidence": 0.9661134391977418,
-      "correct": 1,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "pituitary_tumor"
-    },
-    {
-      "confidence": 0.9918897430332735,
-      "correct": 1,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "pituitary_tumor"
-    },
-    {
-      "confidence": 0.9902683786983956,
-      "correct": 1,
-      "predicted_class": "glioma_tumor",
-      "true_class": "glioma_tumor"
-    },
-    {
-      "confidence": 0.584808529175847,
-      "correct": 0,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "glioma_tumor"
-    },
-    {
-      "confidence": 0.993794026776316,
-      "correct": 1,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.9616278295921213,
-      "correct": 1,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.5652717586845842,
-      "correct": 1,
-      "predicted_class": "glioma_tumor",
-      "true_class": "glioma_tumor"
-    },
-    {
-      "confidence": 0.9386257467246127,
-      "correct": 1,
-      "predicted_class": "no_tumor",
-      "true_class": "no_tumor"
-    },
-    {
-      "confidence": 0.9785516681329447,
-      "correct": 1,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.9487353558791669,
-      "correct": 1,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.9875078533271849,
-      "correct": 1,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "pituitary_tumor"
-    },
-    {
-      "confidence": 0.9757184426931476,
-      "correct": 1,
-      "predicted_class": "glioma_tumor",
-      "true_class": "glioma_tumor"
-    },
-    {
-      "confidence": 0.9861319802364708,
-      "correct": 1,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.9911701696282648,
-      "correct": 0,
-      "predicted_class": "glioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.8764604636773204,
-      "correct": 1,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "pituitary_tumor"
-    },
-    {
-      "confidence": 0.9410614697012739,
-      "correct": 1,
-      "predicted_class": "no_tumor",
-      "true_class": "no_tumor"
-    },
-    {
-      "confidence": 0.8196206576125089,
+      "confidence": 0.9999976779734889,
       "correct": 0,
       "predicted_class": "glioma_tumor",
       "true_class": "no_tumor"
     },
     {
-      "confidence": 0.9776591368711232,
-      "correct": 1,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "pituitary_tumor"
-    },
-    {
-      "confidence": 0.7966498303445384,
-      "correct": 1,
-      "predicted_class": "no_tumor",
-      "true_class": "no_tumor"
-    },
-    {
-      "confidence": 0.979641636391086,
-      "correct": 1,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "pituitary_tumor"
-    },
-    {
-      "confidence": 0.9937307414134555,
-      "correct": 1,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "pituitary_tumor"
-    },
-    {
-      "confidence": 0.9237291250212327,
-      "correct": 1,
-      "predicted_class": "glioma_tumor",
-      "true_class": "glioma_tumor"
-    },
-    {
-      "confidence": 0.9978962113574633,
-      "correct": 1,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "pituitary_tumor"
-    },
-    {
-      "confidence": 0.9770688073140233,
-      "correct": 1,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "pituitary_tumor"
-    },
-    {
-      "confidence": 0.9964980546147069,
+      "confidence": 0.9999904199439406,
       "correct": 1,
       "predicted_class": "meningioma_tumor",
       "true_class": "meningioma_tumor"
     },
     {
-      "confidence": 0.9867155610668122,
+      "confidence": 0.9999986000582711,
       "correct": 1,
       "predicted_class": "glioma_tumor",
       "true_class": "glioma_tumor"
     },
     {
-      "confidence": 0.9814883811871937,
-      "correct": 1,
-      "predicted_class": "pituitary_tumor",
-      "true_class": "pituitary_tumor"
-    },
-    {
-      "confidence": 0.9941837553458666,
-      "correct": 1,
-      "predicted_class": "meningioma_tumor",
-      "true_class": "meningioma_tumor"
-    },
-    {
-      "confidence": 0.9898830500712367,
+      "confidence": 0.9994634057926558,
       "correct": 1,
       "predicted_class": "no_tumor",
       "true_class": "no_tumor"
     },
     {
-      "confidence": 0.5903812557408927,
+      "confidence": 0.8132382423668942,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.7304802801597425,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.984510884727913,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.99999999163834,
+      "correct": 1,
+      "predicted_class": "glioma_tumor",
+      "true_class": "glioma_tumor"
+    },
+    {
+      "confidence": 0.9999954455482856,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.9999972118921646,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.999999996570699,
+      "correct": 1,
+      "predicted_class": "glioma_tumor",
+      "true_class": "glioma_tumor"
+    },
+    {
+      "confidence": 0.9999997128210362,
+      "correct": 1,
+      "predicted_class": "glioma_tumor",
+      "true_class": "glioma_tumor"
+    },
+    {
+      "confidence": 0.99219284292222,
+      "correct": 1,
+      "predicted_class": "no_tumor",
+      "true_class": "no_tumor"
+    },
+    {
+      "confidence": 0.99999969252233,
+      "correct": 1,
+      "predicted_class": "glioma_tumor",
+      "true_class": "glioma_tumor"
+    },
+    {
+      "confidence": 0.999999983738619,
+      "correct": 1,
+      "predicted_class": "glioma_tumor",
+      "true_class": "glioma_tumor"
+    },
+    {
+      "confidence": 0.9998008023193442,
+      "correct": 1,
+      "predicted_class": "pituitary_tumor",
+      "true_class": "pituitary_tumor"
+    },
+    {
+      "confidence": 0.7560643549761183,
+      "correct": 0,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "no_tumor"
+    },
+    {
+      "confidence": 0.9960402840121405,
+      "correct": 1,
+      "predicted_class": "glioma_tumor",
+      "true_class": "glioma_tumor"
+    },
+    {
+      "confidence": 0.9999962291056196,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.7546828686584427,
+      "correct": 0,
+      "predicted_class": "glioma_tumor",
+      "true_class": "no_tumor"
+    },
+    {
+      "confidence": 0.485883510574019,
+      "correct": 1,
+      "predicted_class": "pituitary_tumor",
+      "true_class": "pituitary_tumor"
+    },
+    {
+      "confidence": 0.9999351965947842,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.9354722913497715,
+      "correct": 1,
+      "predicted_class": "glioma_tumor",
+      "true_class": "glioma_tumor"
+    },
+    {
+      "confidence": 0.9999261509679738,
+      "correct": 1,
+      "predicted_class": "no_tumor",
+      "true_class": "no_tumor"
+    },
+    {
+      "confidence": 0.9934078257720603,
+      "correct": 1,
+      "predicted_class": "glioma_tumor",
+      "true_class": "glioma_tumor"
+    },
+    {
+      "confidence": 0.7198045444741877,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.9999657182806257,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.9999999743767077,
+      "correct": 1,
+      "predicted_class": "glioma_tumor",
+      "true_class": "glioma_tumor"
+    },
+    {
+      "confidence": 0.9974628206714804,
+      "correct": 1,
+      "predicted_class": "pituitary_tumor",
+      "true_class": "pituitary_tumor"
+    },
+    {
+      "confidence": 0.9998488771668754,
+      "correct": 1,
+      "predicted_class": "pituitary_tumor",
+      "true_class": "pituitary_tumor"
+    },
+    {
+      "confidence": 0.9999999994394366,
+      "correct": 1,
+      "predicted_class": "glioma_tumor",
+      "true_class": "glioma_tumor"
+    },
+    {
+      "confidence": 0.7315873550753865,
+      "correct": 1,
+      "predicted_class": "glioma_tumor",
+      "true_class": "glioma_tumor"
+    },
+    {
+      "confidence": 0.9999905145777715,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.9999804652603236,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.9999961040717558,
+      "correct": 1,
+      "predicted_class": "glioma_tumor",
+      "true_class": "glioma_tumor"
+    },
+    {
+      "confidence": 0.7192865721127808,
+      "correct": 1,
+      "predicted_class": "no_tumor",
+      "true_class": "no_tumor"
+    },
+    {
+      "confidence": 0.9999736436045954,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.999387664957397,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.9942495328163837,
+      "correct": 1,
+      "predicted_class": "pituitary_tumor",
+      "true_class": "pituitary_tumor"
+    },
+    {
+      "confidence": 0.9999999939632068,
+      "correct": 1,
+      "predicted_class": "glioma_tumor",
+      "true_class": "glioma_tumor"
+    },
+    {
+      "confidence": 0.9996470647339171,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.8850332907889175,
+      "correct": 0,
+      "predicted_class": "glioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.8337402074291493,
+      "correct": 1,
+      "predicted_class": "pituitary_tumor",
+      "true_class": "pituitary_tumor"
+    },
+    {
+      "confidence": 0.9904280935393934,
+      "correct": 1,
+      "predicted_class": "no_tumor",
+      "true_class": "no_tumor"
+    },
+    {
+      "confidence": 0.9157503265821844,
+      "correct": 1,
+      "predicted_class": "no_tumor",
+      "true_class": "no_tumor"
+    },
+    {
+      "confidence": 0.9989595259007436,
+      "correct": 1,
+      "predicted_class": "pituitary_tumor",
+      "true_class": "pituitary_tumor"
+    },
+    {
+      "confidence": 0.9531533798693064,
+      "correct": 1,
+      "predicted_class": "no_tumor",
+      "true_class": "no_tumor"
+    },
+    {
+      "confidence": 0.9753539437191868,
+      "correct": 1,
+      "predicted_class": "pituitary_tumor",
+      "true_class": "pituitary_tumor"
+    },
+    {
+      "confidence": 0.9998374644338955,
+      "correct": 1,
+      "predicted_class": "pituitary_tumor",
+      "true_class": "pituitary_tumor"
+    },
+    {
+      "confidence": 0.999999881467729,
+      "correct": 1,
+      "predicted_class": "glioma_tumor",
+      "true_class": "glioma_tumor"
+    },
+    {
+      "confidence": 0.999752927324104,
+      "correct": 1,
+      "predicted_class": "pituitary_tumor",
+      "true_class": "pituitary_tumor"
+    },
+    {
+      "confidence": 0.9997736435272232,
+      "correct": 1,
+      "predicted_class": "pituitary_tumor",
+      "true_class": "pituitary_tumor"
+    },
+    {
+      "confidence": 0.999996007126184,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.9999999641861745,
+      "correct": 1,
+      "predicted_class": "glioma_tumor",
+      "true_class": "glioma_tumor"
+    },
+    {
+      "confidence": 0.9992882498363592,
+      "correct": 1,
+      "predicted_class": "pituitary_tumor",
+      "true_class": "pituitary_tumor"
+    },
+    {
+      "confidence": 0.9999902899896607,
+      "correct": 1,
+      "predicted_class": "meningioma_tumor",
+      "true_class": "meningioma_tumor"
+    },
+    {
+      "confidence": 0.9999095672122086,
+      "correct": 1,
+      "predicted_class": "no_tumor",
+      "true_class": "no_tumor"
+    },
+    {
+      "confidence": 0.9999999528013968,
       "correct": 1,
       "predicted_class": "glioma_tumor",
       "true_class": "glioma_tumor"
     }
   ],
   "timing": {
-    "training_total_ms": 3948.5
+    "training_total_ms": 4095.95
   }
 }

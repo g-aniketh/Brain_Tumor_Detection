@@ -66,10 +66,10 @@ def _load_dataset():
     return np.array(images), np.array(labels)
 
 
-def _legacy_pca_cumulative_curve():
+def _legacy_pca_cumulative_curve(target_variance=0.98):
     x, _ = _load_dataset()
     x_flat = x.reshape(len(x), -1) / 255.0
-    pca = PCA(0.98)
+    pca = PCA(float(target_variance))
     pca.fit(x_flat)
     return np.cumsum(pca.explained_variance_ratio_)
 
@@ -77,19 +77,29 @@ def _legacy_pca_cumulative_curve():
 def generate_pca_plot(report):
     print("Generating PCA cumulative variance plot...")
 
+    target_variance = float(report.get("pca_variance", 0.98))
+    target_variance = min(max(target_variance, 0.5), 0.9999)
+
     explained_variance_ratio = report.get("pca_explained_variance_ratio", [])
     if explained_variance_ratio:
         cumulative = np.cumsum(np.array(explained_variance_ratio, dtype=np.float64))
     else:
         # Backward compatibility for older training reports that do not include PCA vectors.
-        cumulative = _legacy_pca_cumulative_curve()
+        cumulative = _legacy_pca_cumulative_curve(target_variance=target_variance)
 
-    threshold_idx = int(np.argmax(cumulative >= 0.98))
+    if np.any(cumulative >= target_variance):
+        threshold_idx = int(np.argmax(cumulative >= target_variance))
+    else:
+        threshold_idx = len(cumulative) - 1
+
+    threshold_x = threshold_idx + 1
+    threshold_y = float(cumulative[threshold_idx])
+    target_label = int(round(target_variance * 100))
 
     fig, ax = plt.subplots(figsize=(10, 6), dpi=100)
     ax.plot(range(1, len(cumulative) + 1), cumulative, color="#0f766e", linewidth=2)
-    ax.axhline(0.98, color="#dc2626", linestyle="--", linewidth=1.5)
-    ax.axvline(threshold_idx + 1, color="#0284c7", linestyle=":", linewidth=1.5)
+    ax.axhline(target_variance, color="#dc2626", linestyle="--", linewidth=1.5)
+    ax.axvline(threshold_x, color="#0284c7", linestyle=":", linewidth=1.5)
 
     ax.set_title("PCA Cumulative Variance Plot", fontsize=14, fontweight="bold")
     ax.set_xlabel("Number of Components")
@@ -98,9 +108,9 @@ def generate_pca_plot(report):
     ax.grid(alpha=0.25)
 
     ax.annotate(
-        f"{threshold_idx + 1} components\nfor 98% variance",
-        xy=(threshold_idx + 1, cumulative[threshold_idx]),
-        xytext=(threshold_idx + 15, 0.86),
+        f"{threshold_x} components\nfor {target_label}% variance",
+        xy=(threshold_x, threshold_y),
+        xytext=(threshold_x + max(10, len(cumulative) // 10), min(0.95, threshold_y + 0.18)),
         arrowprops={"arrowstyle": "->", "color": "#0f766e"},
         bbox={"boxstyle": "round,pad=0.4", "fc": "#f8fafc", "ec": "#0f766e"},
     )

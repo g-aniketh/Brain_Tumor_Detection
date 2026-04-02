@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ARTIFACT_DIR = os.path.join(BASE_DIR, "artifacts")
 MODEL_BUNDLE_PATH = os.path.join(ARTIFACT_DIR, "model_bundle.joblib")
 TRAINING_REPORT_PATH = os.path.join(ARTIFACT_DIR, "training_report.json")
-MODEL_VERSION = "2.1.1"
+MODEL_VERSION = "2.3.0"
 
 DATASET_LABELS = {
     "no_tumor": 0,
@@ -36,14 +36,25 @@ IMAGE_SIZE = (200, 200)
 
 RANDOM_STATE = 10
 TEST_SIZE = 0.3
-PCA_VARIANCE = 0.98
+PCA_VARIANCE = float(os.getenv("PCA_VARIANCE", "0.96"))
 LOW_CONFIDENCE_THRESHOLD = float(os.getenv("LOW_CONFIDENCE_THRESHOLD", "70"))
 ENABLE_CLAHE_DEFAULT = os.getenv("ENABLE_CLAHE", "0") == "1"
 ENABLE_TRAIN_AUGMENTATION = os.getenv("ENABLE_TRAIN_AUGMENTATION", "0") == "1"
+PREPROCESSING_MODE = os.getenv("PREPROCESSING_MODE", "equalize").strip().lower()
+
+if PREPROCESSING_MODE not in {"raw", "equalize"}:
+    LOGGER.warning("Unsupported PREPROCESSING_MODE=%s. Falling back to 'equalize'.", PREPROCESSING_MODE)
+    PREPROCESSING_MODE = "equalize"
 
 
 def _dataset_class_path(class_name):
     return os.path.join(BASE_DIR, class_name)
+
+
+def _apply_base_preprocessing(image):
+    if PREPROCESSING_MODE == "equalize":
+        return cv2.equalizeHist(image)
+    return image
 
 
 def _compute_dataset_fingerprint():
@@ -85,6 +96,7 @@ def _load_dataset():
                 continue
 
             image = cv2.resize(image, IMAGE_SIZE, interpolation=cv2.INTER_AREA)
+            image = _apply_base_preprocessing(image)
             images.append(image)
             labels.append(class_id)
 
@@ -166,22 +178,50 @@ def _train_model(enable_grid_search=True):
     x_train_pca = pca.fit_transform(x_train)
     x_test_pca = pca.transform(x_test)
 
-    logistic_model = LogisticRegression(max_iter=3000, C=1.0, random_state=RANDOM_STATE)
-    logistic_model.fit(x_train_pca, y_train)
+    logistic_model = LogisticRegression(max_iter=6000, C=0.1, random_state=RANDOM_STATE)
+    logistic_best_params = {"C": 0.1, "class_weight": None}
+    logistic_cv_best_score = None
+    logistic_search_space_size = 1
+
+    if enable_grid_search:
+        logistic_param_grid = {
+            "C": [0.1],
+            "class_weight": [None],
+        }
+        logistic_search_space_size = (
+            len(logistic_param_grid["C"]) * len(logistic_param_grid["class_weight"])
+        )
+        logistic_search = GridSearchCV(
+            estimator=LogisticRegression(max_iter=6000, random_state=RANDOM_STATE),
+            param_grid=logistic_param_grid,
+            scoring="accuracy",
+            cv=StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE),
+            n_jobs=-1,
+        )
+        logistic_search.fit(x_train_pca, y_train)
+        logistic_model = logistic_search.best_estimator_
+        logistic_best_params = {
+            "C": float(logistic_search.best_params_["C"]),
+            "class_weight": logistic_search.best_params_["class_weight"],
+        }
+        logistic_cv_best_score = float(logistic_search.best_score_)
+    else:
+        logistic_model.fit(x_train_pca, y_train)
+
     logistic_predictions = logistic_model.predict(x_test_pca)
     logistic_metrics = _evaluate_model(y_test, logistic_predictions)
 
     svm_model = SVC(kernel="rbf", probability=True, random_state=RANDOM_STATE)
-    best_params = {"kernel": "rbf", "C": 1.0, "gamma": "scale", "class_weight": None}
+    best_params = {"kernel": "rbf", "C": 2.0, "gamma": 0.002, "class_weight": None}
     cv_best_score = None
     search_space_size = 1
 
     if enable_grid_search:
         cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
         param_grid = {
-            "C": [0.5, 1, 5, 10, 20, 40],
-            "gamma": ["scale", "auto", 0.001, 0.003, 0.005, 0.01],
-            "class_weight": [None, "balanced"],
+            "C": [2.0],
+            "gamma": [0.002],
+            "class_weight": [None],
         }
         search_space_size = len(param_grid["C"]) * len(param_grid["gamma"]) * len(param_grid["class_weight"])
 
@@ -250,9 +290,13 @@ def _train_model(enable_grid_search=True):
             "train_images_after_augmentation": int(len(x_train)),
             "test_images": int(len(x_test)),
             "class_distribution": _class_distribution(y),
+            "preprocessing_mode": PREPROCESSING_MODE,
         },
         "augmentation": augmentation_report,
         "baseline_logistic_regression": {
+            "search_space_size": int(logistic_search_space_size),
+            "best_params": logistic_best_params,
+            "cv_best_accuracy": logistic_cv_best_score,
             "metrics": logistic_metrics,
         },
         "svm": {
@@ -269,10 +313,11 @@ def _train_model(enable_grid_search=True):
     }
 
     LOGGER.info(
-        "Training complete. SVM accuracy=%.4f, Logistic accuracy=%.4f, PCA components=%s, train_after_augmentation=%s",
+        "Training complete. SVM accuracy=%.4f, Logistic accuracy=%.4f, PCA components=%s, preprocessing_mode=%s, train_after_augmentation=%s",
         svm_metrics["accuracy"],
         logistic_metrics["accuracy"],
         pca.n_components_,
+        PREPROCESSING_MODE,
         len(x_train),
     )
 
@@ -343,6 +388,7 @@ def _build_metadata(dataset_fingerprint):
         "image_size": [IMAGE_SIZE[0], IMAGE_SIZE[1]],
         "labels": DATASET_LABELS,
         "low_confidence_threshold": LOW_CONFIDENCE_THRESHOLD,
+        "preprocessing_mode": PREPROCESSING_MODE,
     }
 
 
@@ -384,10 +430,12 @@ def _preprocess_uploaded_image(file, enable_clahe=None):
     if enable_clahe is None:
         enable_clahe = ENABLE_CLAHE_DEFAULT
 
+    image = cv2.resize(image, IMAGE_SIZE, interpolation=cv2.INTER_AREA)
+    image = _apply_base_preprocessing(image)
+
     if enable_clahe:
         image = _apply_clahe(image)
 
-    image = cv2.resize(image, IMAGE_SIZE, interpolation=cv2.INTER_AREA)
     image = image.reshape(1, -1).astype(np.float32) / 255.0
 
     elapsed_ms = round((time.perf_counter() - preprocess_start) * 1000, 2)
