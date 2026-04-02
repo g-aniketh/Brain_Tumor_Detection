@@ -299,74 +299,139 @@ def _enforce_rate_limit():
 
 @app.route("/")
 def home():
-    return render_template("home.html")
+    return render_template("home.html", max_batch_size=MAX_BATCH_SIZE)
 
 
 @app.route("/result", methods=["POST"])
 def result():
     request_start = time.perf_counter()
 
-    file = request.files.get("image")
-    if not file or file.filename == "":
+    files = [item for item in request.files.getlist("image") if item and item.filename]
+    if not files:
         return render_template("result.html", error="Please upload an image file.")
 
-    if not _allowed_file(file.filename):
-        return render_template("result.html", error="Unsupported file type. Upload a valid image.")
+    if len(files) > MAX_BATCH_SIZE:
+        return render_template("result.html", error=f"You can upload up to {MAX_BATCH_SIZE} files at once.")
 
-    upload_name = _new_upload_name(file.filename)
-    file_path = os.path.join(app.config["UPLOAD_FOLDER"], upload_name)
     enable_clahe = request.form.get("enhance") == "on"
 
-    file.save(file_path)
+    batch_results = []
 
-    prediction = None
-    error_message = None
+    for file in files:
+        filename = secure_filename(file.filename) or "uploaded_image"
+        item_start = time.perf_counter()
 
-    try:
-        with open(file_path, "rb") as uploaded_file:
-            prediction = get_tumor_prediction(uploaded_file, enable_clahe=enable_clahe)
-    except ValueError as error:
-        error_message = str(error)
-    finally:
-        _safe_remove(file_path)
+        if not _allowed_file(file.filename):
+            item_error = "Unsupported file type. Upload a valid image."
+            batch_results.append(
+                {
+                    "filename": filename,
+                    "status": "error",
+                    "error": item_error,
+                }
+            )
+            _append_history(
+                {
+                    "id": uuid.uuid4().hex,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "source": "web",
+                    "filename": filename,
+                    "enhancement": bool(enable_clahe),
+                    "status": "error",
+                    "error": item_error,
+                }
+            )
+            continue
 
-    elapsed_ms = round((time.perf_counter() - request_start) * 1000, 2)
+        upload_name = _new_upload_name(file.filename)
+        file_path = os.path.join(app.config["UPLOAD_FOLDER"], upload_name)
+        file.save(file_path)
 
-    record = {
-        "id": uuid.uuid4().hex,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "source": "web",
-        "filename": secure_filename(file.filename),
-        "enhancement": bool(enable_clahe),
-        "status": "success" if prediction else "error",
-        "latency_ms": elapsed_ms,
-    }
+        prediction = None
+        error_message = None
 
-    if prediction:
-        record.update(
-            {
+        try:
+            with open(file_path, "rb") as uploaded_file:
+                prediction = get_tumor_prediction(uploaded_file, enable_clahe=enable_clahe)
+        except ValueError as error:
+            error_message = str(error)
+        finally:
+            _safe_remove(file_path)
+
+        elapsed_ms = round((time.perf_counter() - item_start) * 1000, 2)
+
+        record = {
+            "id": uuid.uuid4().hex,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "source": "web",
+            "filename": filename,
+            "enhancement": bool(enable_clahe),
+            "status": "success" if prediction else "error",
+            "latency_ms": elapsed_ms,
+        }
+
+        if prediction:
+            result_item = {
+                "filename": filename,
+                "status": "success",
                 "tumor_type": prediction["tumor_type"],
-                "confidence": round(float(prediction["confidence"]) * 100, 4),
-                "low_confidence": bool(prediction["low_confidence"]),
+                "confidence": round(prediction["confidence"] * 100, 2),
+                "low_confidence": prediction["low_confidence"],
+                "threshold": prediction["low_confidence_threshold"],
                 "model_version": prediction["model_version"],
+                "latency_ms": elapsed_ms,
             }
+            batch_results.append(result_item)
+            record.update(
+                {
+                    "tumor_type": prediction["tumor_type"],
+                    "confidence": round(float(prediction["confidence"]) * 100, 4),
+                    "low_confidence": bool(prediction["low_confidence"]),
+                    "model_version": prediction["model_version"],
+                }
+            )
+        else:
+            result_item = {
+                "filename": filename,
+                "status": "error",
+                "error": error_message or "Unable to process image.",
+                "latency_ms": elapsed_ms,
+            }
+            batch_results.append(result_item)
+            record["error"] = result_item["error"]
+
+        _append_history(record)
+
+    total_elapsed_ms = round((time.perf_counter() - request_start) * 1000, 2)
+
+    if len(batch_results) == 1:
+        single = batch_results[0]
+        if single.get("status") != "success":
+            return render_template("result.html", error=single.get("error", "Unable to process image."))
+
+        return render_template(
+            "result.html",
+            tumor_result=single["tumor_type"],
+            confidence=single["confidence"],
+            low_confidence=single["low_confidence"],
+            threshold=single["threshold"],
+            model_version=single["model_version"],
+            latency_ms=single["latency_ms"],
         )
-    else:
-        record["error"] = error_message
 
-    _append_history(record)
-
-    if not prediction:
-        return render_template("result.html", error=error_message or "Unable to process image.")
+    success_count = sum(1 for item in batch_results if item.get("status") == "success")
+    first_success = next((item for item in batch_results if item.get("status") == "success"), None)
+    model_version = first_success.get("model_version") if first_success else get_model_metadata().get("model_version")
+    threshold = first_success.get("threshold") if first_success else get_model_metadata().get("low_confidence_threshold")
 
     return render_template(
         "result.html",
-        tumor_result=prediction["tumor_type"],
-        confidence=round(prediction["confidence"] * 100, 2),
-        low_confidence=prediction["low_confidence"],
-        threshold=prediction["low_confidence_threshold"],
-        model_version=prediction["model_version"],
-        latency_ms=elapsed_ms,
+        batch_results=batch_results,
+        success_count=success_count,
+        total_count=len(batch_results),
+        threshold=threshold,
+        model_version=model_version,
+        latency_ms=total_elapsed_ms,
     )
 
 

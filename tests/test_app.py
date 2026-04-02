@@ -4,6 +4,7 @@ import os
 import unittest
 
 from app import MAX_BATCH_SIZE, app
+from werkzeug.datastructures import MultiDict
 
 
 class BrainTumorAppTests(unittest.TestCase):
@@ -73,6 +74,23 @@ class BrainTumorAppTests(unittest.TestCase):
 
         data = response.get_json()
         self.assertIn("svm", data)
+
+    def test_result_route_accepts_multiple_images(self):
+        with open(self.sample_image_path, "rb") as image_file:
+            image_bytes = image_file.read()
+
+        payload = MultiDict(
+            [
+                ("image", (io.BytesIO(image_bytes), "first.jpg")),
+                ("image", (io.BytesIO(image_bytes), "second.jpg")),
+            ]
+        )
+        response = self.client.post("/result", data=payload, content_type="multipart/form-data")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Batch processed", response.data)
+        self.assertIn(b"first.jpg", response.data)
+        self.assertIn(b"second.jpg", response.data)
 
 
 if __name__ == "__main__":

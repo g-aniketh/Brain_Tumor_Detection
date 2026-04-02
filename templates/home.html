@@ -64,15 +64,16 @@
           <img id="banner" src="{{ url_for('static', filename='scanstaticart.jpg') }}" alt="Brain MRI visualization">
         </div>
         <form class="upload-form" action="/result" enctype="multipart/form-data" method="post">
-          <label class="input-label" for="image">Select MRI image file</label>
-          <input class="file-input" type="file" name="image" id="image" accept="image/*" required>
+          <label class="input-label" for="image">Select one or more MRI image files</label>
+          <input class="file-input" type="file" name="image" id="image" accept="image/*" multiple required>
           <label class="checkbox-row" for="enhance">
-            <input type="checkbox" id="enhance" name="enhance" value="on">
+            <input type="checkbox" id="enhance" name="enhance" value="on" checked>
             Apply contrast enhancement (CLAHE)
           </label>
-          <button class="btn btn-primary" type="submit">Analyze Image</button>
+          <button class="btn btn-primary" type="submit">Analyze Image(s)</button>
         </form>
-        <p class="note-text">Maximum upload size: 10 MB. Supported formats: PNG, JPG, JPEG, BMP, TIFF, WEBP.</p>
+        <p class="note-text">Maximum upload size: 10 MB. Maximum batch size: {{ max_batch_size }} images. Supported
+          formats: PNG, JPG, JPEG, BMP, TIFF, WEBP.</p>
         <div class="actions-row">
           <a class="btn btn-secondary" href="/api/metrics?view=html">Metrics Dashboard</a>
           <a class="btn btn-secondary" href="/api/history?view=html">History Dashboard</a>

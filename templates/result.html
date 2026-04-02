@@ -48,6 +48,65 @@
       <div class="message message-error">{{ error }}</div>
       {% endif %}
 
+      {% if batch_results and total_count and total_count > 1 %}
+      <div class="message message-success">Batch processed: {{ success_count }} / {{ total_count }} successful</div>
+
+      {% if success_count < total_count %}
+      <div class="message message-warning">Some files failed processing. Review the table below for details.</div>
+      {% endif %}
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Filename</th>
+              <th>Status</th>
+              <th>Predicted Class</th>
+              <th>Confidence</th>
+              <th>Low confidence</th>
+              <th>Latency (ms)</th>
+              <th>Error</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in batch_results %}
+            <tr>
+              <td>{{ item.get('filename', '-') }}</td>
+              <td>{{ item.get('status', '-') }}</td>
+              <td>{{ item.get('tumor_type', '-').replace('_', ' ') }}</td>
+              <td>
+                {% if item.get('confidence') is not none %}
+                {{ item.get('confidence') }}%
+                {% else %}
+                -
+                {% endif %}
+              </td>
+              <td>
+                {% if item.get('low_confidence') is not none %}
+                {{ item.get('low_confidence') }}
+                {% else %}
+                -
+                {% endif %}
+              </td>
+              <td>{{ item.get('latency_ms', '-') }}</td>
+              <td>{{ item.get('error', '-') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if threshold is not none %}
+      <p class="meta-text">Low confidence threshold: {{ threshold }}%</p>
+      {% endif %}
+      {% if model_version %}
+      <p class="meta-text">Model version: {{ model_version }}</p>
+      {% endif %}
+      {% if latency_ms %}
+      <p class="meta-text">Total request latency: {{ latency_ms }} ms</p>
+      {% endif %}
+      {% endif %}
+
       {% if tumor_result %}
       <div class="message message-success">Predicted Class: <strong>{{ tumor_result.replace('_', ' ').title()
           }}</strong></div>
