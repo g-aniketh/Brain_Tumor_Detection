@@ -6,6 +6,7 @@ import os
 import time
 import uuid
 from datetime import datetime, timezone
+from urllib.parse import urlencode
 
 from flask import Flask, jsonify, render_template, request
 from werkzeug.utils import secure_filename
@@ -163,6 +164,93 @@ def _history_response(records, page, per_page):
         "pages": (total + per_page - 1) // per_page,
         "items": records[start:end],
     }
+
+
+def _request_wants_html():
+    if request.args.get("format") == "json":
+        return False
+    if request.args.get("view") == "html":
+        return True
+
+    best = request.accept_mimetypes.best
+    return best == "text/html" and request.accept_mimetypes["text/html"] >= request.accept_mimetypes["application/json"]
+
+
+def _build_query_url(path, params):
+    compact = {}
+    for key, value in params.items():
+        if value is None:
+            continue
+        if isinstance(value, str) and value == "":
+            continue
+        compact[key] = value
+
+    query = urlencode(compact)
+    if not query:
+        return path
+    return f"{path}?{query}"
+
+
+def _build_history_payload():
+    records = _read_history()
+
+    class_name = request.args.get("class")
+    source = request.args.get("source")
+    status = request.args.get("status")
+    min_confidence = _parse_float(request.args.get("min_confidence"))
+    max_confidence = _parse_float(request.args.get("max_confidence"))
+    low_confidence = request.args.get("low_confidence")
+    start_date = _parse_iso_datetime(request.args.get("start_date"))
+    end_date = _parse_iso_datetime(request.args.get("end_date"))
+
+    filtered = []
+    for record in records:
+        if class_name and record.get("tumor_type") != class_name:
+            continue
+        if source and record.get("source") != source:
+            continue
+        if status and record.get("status") != status:
+            continue
+
+        confidence = _parse_float(record.get("confidence"))
+        if min_confidence is not None and (confidence is None or confidence < min_confidence):
+            continue
+        if max_confidence is not None and (confidence is None or confidence > max_confidence):
+            continue
+
+        if low_confidence in {"true", "false"}:
+            wanted = low_confidence == "true"
+            if bool(record.get("low_confidence", False)) != wanted:
+                continue
+
+        if start_date or end_date:
+            record_time = _parse_iso_datetime(record.get("timestamp"))
+            if record_time is None:
+                continue
+            if start_date and record_time < start_date:
+                continue
+            if end_date and record_time > end_date:
+                continue
+
+        filtered.append(record)
+
+    filtered.sort(key=lambda item: item.get("timestamp", ""), reverse=True)
+
+    page = max(1, _parse_int(request.args.get("page"), 1))
+    per_page = max(1, min(100, _parse_int(request.args.get("per_page"), 20)))
+
+    payload = _history_response(filtered, page=page, per_page=per_page)
+    filters = {
+        "class": class_name or "",
+        "source": source or "",
+        "status": status or "",
+        "min_confidence": request.args.get("min_confidence", ""),
+        "max_confidence": request.args.get("max_confidence", ""),
+        "low_confidence": low_confidence or "",
+        "start_date": request.args.get("start_date", ""),
+        "end_date": request.args.get("end_date", ""),
+    }
+    return payload, filters
 
 
 @app.after_request
@@ -380,54 +468,42 @@ def api_predict():
 
 @app.route("/api/history", methods=["GET"])
 def api_history():
-    records = _read_history()
+    payload, filters = _build_history_payload()
 
-    class_name = request.args.get("class")
-    source = request.args.get("source")
-    status = request.args.get("status")
-    min_confidence = _parse_float(request.args.get("min_confidence"))
-    max_confidence = _parse_float(request.args.get("max_confidence"))
-    low_confidence = request.args.get("low_confidence")
-    start_date = _parse_iso_datetime(request.args.get("start_date"))
-    end_date = _parse_iso_datetime(request.args.get("end_date"))
+    if _request_wants_html():
+        labels = list(get_model_metadata().get("labels", {}).keys())
+        classes = labels if labels else sorted({item.get("tumor_type") for item in payload["items"] if item.get("tumor_type")})
 
-    filtered = []
-    for record in records:
-        if class_name and record.get("tumor_type") != class_name:
-            continue
-        if source and record.get("source") != source:
-            continue
-        if status and record.get("status") != status:
-            continue
+        query_base = {
+            "class": filters["class"],
+            "source": filters["source"],
+            "status": filters["status"],
+            "min_confidence": filters["min_confidence"],
+            "max_confidence": filters["max_confidence"],
+            "low_confidence": filters["low_confidence"],
+            "start_date": filters["start_date"],
+            "end_date": filters["end_date"],
+            "per_page": payload["per_page"],
+            "view": "html",
+        }
 
-        confidence = _parse_float(record.get("confidence"))
-        if min_confidence is not None and (confidence is None or confidence < min_confidence):
-            continue
-        if max_confidence is not None and (confidence is None or confidence > max_confidence):
-            continue
+        prev_url = None
+        next_url = None
+        if payload["page"] > 1:
+            prev_url = _build_query_url("/api/history", {**query_base, "page": payload["page"] - 1})
+        if payload["page"] < payload["pages"]:
+            next_url = _build_query_url("/api/history", {**query_base, "page": payload["page"] + 1})
 
-        if low_confidence in {"true", "false"}:
-            wanted = low_confidence == "true"
-            if bool(record.get("low_confidence", False)) != wanted:
-                continue
+        return render_template(
+            "api_history.html",
+            data=payload,
+            filters=filters,
+            class_options=classes,
+            prev_url=prev_url,
+            next_url=next_url,
+        )
 
-        if start_date or end_date:
-            record_time = _parse_iso_datetime(record.get("timestamp"))
-            if record_time is None:
-                continue
-            if start_date and record_time < start_date:
-                continue
-            if end_date and record_time > end_date:
-                continue
-
-        filtered.append(record)
-
-    filtered.sort(key=lambda item: item.get("timestamp", ""), reverse=True)
-
-    page = max(1, _parse_int(request.args.get("page"), 1))
-    per_page = max(1, min(100, _parse_int(request.args.get("per_page"), 20)))
-
-    return jsonify(_history_response(filtered, page=page, per_page=per_page))
+    return jsonify(payload)
 
 
 @app.route("/history", methods=["GET"])
@@ -437,7 +513,20 @@ def history_alias():
 
 @app.route("/api/metrics", methods=["GET"])
 def api_metrics():
-    return jsonify(get_training_report())
+    report = get_training_report() or {}
+
+    if _request_wants_html():
+        labels = list(get_model_metadata().get("labels", {}).keys())
+        static_assets = [
+            {"name": "PCA Scree Plot", "path": "pca_scree_plot.png"},
+            {"name": "Model Comparison", "path": "performance_comparison.png"},
+            {"name": "Confusion Matrix", "path": "confusion_matrix.png"},
+            {"name": "Confidence Distribution", "path": "confidence_distribution.png"},
+            {"name": "Calibration Curve", "path": "calibration_curve.png"},
+        ]
+        return render_template("api_metrics.html", report=report, class_labels=labels, static_assets=static_assets)
+
+    return jsonify(report)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,178 @@
+Brain Tumor Detection Using MRI Images with a Classical ML Pipeline and Web Deployment
+
+Aniketh Gandhari, T. Sushmitha, Phanindra, Dr. G. Venkata Rami Reddy
+Department of Computer Science and Engineering
+Vardhaman College of Engineering, Hyderabad, India
+
+Abstract
+Brain tumor screening from MRI scans is clinically important but can be time-consuming and specialist-dependent. This work presents an end-to-end classical machine learning system for four-class MRI classification (no_tumor, glioma_tumor, meningioma_tumor, pituitary_tumor) and deploys it through a Flask web application and JSON API. The implemented pipeline performs grayscale conversion, fixed-size normalization (200x200), scaling, Principal Component Analysis (PCA), and Support Vector Machine (SVM) classification. A Logistic Regression baseline is included for comparative evaluation on the same split. The application provides confidence scores, low-confidence referral flags, secure upload handling, batch inference support, model persistence, and prediction history logging. On the current artifact-backed run, Logistic Regression achieved 84.17% test accuracy, while tuned SVM achieved 88.33% with stronger multiclass robustness. The system demonstrates that lightweight, CPU-friendly approaches remain effective for educational and prototype clinical decision-support settings.
+
+Keywords: brain tumor detection, MRI classification, PCA, SVM, Flask, computer-aided diagnosis, confidence calibration
+
+1. Introduction
+Brain tumors are among the most critical neurological conditions because early and accurate detection strongly affects treatment planning and patient outcomes [1]. MRI is widely used due to superior soft-tissue contrast and non-ionizing imaging, but expert interpretation is resource-intensive [2].
+
+Recent AI systems, especially deep learning methods, have shown strong results on large-scale datasets [9], [10]. However, many real-world educational and prototype deployments still require low-cost, interpretable, and CPU-friendly methods [3], [11]. This study focuses on that practical gap by combining a classical ML model with complete software deployment, including web-based inference, API access, and operational safeguards.
+
+Main contributions:
+1. A reproducible PCA + SVM multiclass MRI classification pipeline with a Logistic Regression baseline.
+2. Artifact-backed model lifecycle with persisted model bundle and training report.
+3. A deployable Flask application with secure upload flow, batch API, confidence triage, and history retrieval.
+4. Evidence artifacts including confusion matrix, confidence distribution, calibration curve, and performance comparison plots.
+
+2. Related Work
+Early MRI tumor classification methods relied on handcrafted texture features (e.g., GLCM, LBP, wavelets) and traditional classifiers [3]. These systems often worked on controlled datasets but were sensitive to scanner and protocol variations.
+
+Deep learning architectures later improved performance substantially on large benchmarks such as BRATS [9], [10]. Despite this, deep models typically require more compute, larger annotated datasets, and more complex optimization workflows. Classical methods remain valuable in constrained contexts and are still competitive on curated datasets when preprocessing and dimensionality reduction are handled carefully [11].
+
+This project follows that practical path and extends prior notebook-style work into a software-complete system, addressing deployment, security hygiene, confidence reporting, and API integration [4], [14].
+
+3. Methodology
+3.1 Dataset and Labeling
+The current dataset is organized into four class directories:
+1. no_tumor
+2. glioma_tumor
+3. meningioma_tumor
+4. pituitary_tumor
+
+Artifact-backed class distribution (latest run):
+1. no_tumor: 100
+2. glioma_tumor: 100
+3. meningioma_tumor: 99
+4. pituitary_tumor: 100
+
+Total images: 399.
+
+3.2 Preprocessing
+Each image is processed as follows:
+1. Read MRI image and convert to grayscale.
+2. Resize to 200x200.
+3. Flatten to 40,000-dimensional vector.
+4. Normalize pixel values to [0, 1].
+5. Optional CLAHE enhancement for low-contrast inputs.
+
+3.3 Dimensionality Reduction (PCA)
+Let X be the normalized feature matrix. PCA projects X to a lower-dimensional space while retaining 98% explained variance [6]. In the current training run, PCA retained 214 components on the train split.
+
+3.4 Classification
+Two models are trained on the same PCA-transformed features:
+1. Logistic Regression baseline.
+2. SVM with RBF kernel.
+
+SVM uses grid search with stratified 5-fold cross-validation to tune C and gamma [7], [8], [11]. Probability output is enabled to provide confidence scores.
+
+3.5 Evaluation Metrics
+Standard multiclass metrics are used:
+1. Accuracy
+2. Macro precision
+3. Macro recall
+4. Macro F1
+5. Confusion matrix
+
+4. Software Architecture
+4.1 Model Lifecycle and Persistence
+The training pipeline generates:
+1. artifacts/model_bundle.joblib (PCA, SVM, metadata)
+2. artifacts/training_report.json (metrics, confusion matrix, calibration samples, timing)
+
+On startup, the app loads persisted artifacts when compatible (model version and dataset fingerprint). If invalid or forced, it retrains and re-persists.
+
+4.2 Flask Web Workflow
+The web interface allows MRI upload and returns:
+1. Predicted class
+2. Confidence percentage
+3. Low-confidence warning based on configurable threshold
+4. Model version and request latency
+
+4.3 JSON API
+Implemented endpoints:
+1. POST /api/predict for single-image prediction (base64 payload)
+2. POST /api/predict for batch prediction via images[] payload
+3. GET /api/history for paginated and filtered prediction history
+4. GET /api/metrics for training report retrieval
+5. GET /history as alias for compatibility
+
+4.4 Operational and Security Controls
+Implemented runtime safeguards:
+1. Secure filename sanitization
+2. Upload size limit enforcement (MAX_CONTENT_LENGTH)
+3. Request rate limiting on prediction routes
+4. Security response headers (CSP, X-Frame-Options, etc.)
+5. Temporary-file cleanup after prediction
+6. Optional CORS origin control via environment variable
+
+4.5 Prediction History
+Week 15 was implemented with file-based persistence (JSONL) rather than database storage, based on selected project scope. Logged fields include timestamp, source (web/api), status, class, confidence, and latency.
+
+5. Experimental Setup and Results
+5.1 Environment
+Implementation uses Python, Flask, OpenCV, NumPy, and scikit-learn [4], [5], [11], [14]. The pipeline runs on standard CPU hardware.
+
+5.2 Train-Test Protocol
+1. Stratified split: 70% train, 30% test.
+2. Random state: 10.
+3. PCA variance retention: 98%.
+
+5.3 Artifact-Backed Results (Latest Run)
+1. Logistic Regression accuracy: 84.17%
+2. SVM accuracy: 88.33%
+3. SVM CV best accuracy: 92.81%
+4. PCA components retained: 214
+
+SVM confusion matrix (rows: true class, columns: predicted class):
+1. no_tumor: [23, 4, 1, 2]
+2. pituitary_tumor: [0, 30, 0, 0]
+3. meningioma_tumor: [0, 2, 26, 2]
+4. glioma_tumor: [0, 2, 1, 27]
+
+Observations:
+1. Pituitary class shows strongest recall in this run.
+2. Most errors occur between no_tumor and tumor classes or between glioma and meningioma in ambiguous patterns.
+3. Confidence distribution is generally high for correct predictions, with overlap in low-confidence regions.
+4. Calibration curve indicates reasonable but imperfect calibration; low-confidence triage remains useful.
+
+5.4 Inference Performance
+The app reports per-request timing and provides low-latency responses suitable for interactive screening workflows.
+
+6. Ethical and Practical Considerations
+6.1 Privacy Handling
+The app applies privacy-oriented handling (temporary storage with cleanup, no intentional long-term image retention in the upload path). This supports safer prototyping but does not itself constitute formal HIPAA/GDPR certification.
+
+6.2 Clinical Scope
+This system is a decision-support prototype, not an autonomous diagnostic authority. Outputs should be reviewed by qualified clinicians.
+
+6.3 Bias and Generalization
+Performance is tied to dataset composition. Broader multi-center validation is required before stronger clinical deployment claims.
+
+7. Limitations and Future Work
+Current limitations:
+1. Dataset size remains modest.
+2. No external multi-institutional validation yet.
+3. File-based history is practical but less scalable than a full database-backed design.
+
+Future work:
+1. Expand dataset diversity across scanners and institutions.
+2. Add formal calibration techniques (e.g., isotonic or Platt post-calibration study).
+3. Introduce optional database-backed audit layer when needed.
+4. Add containerized deployment and CI/CD release pipeline.
+5. Evaluate hybrid ensemble designs with lightweight CNN backends.
+
+8. Conclusion
+This work delivers a complete, deployable MRI tumor classification prototype using classical ML. The combination of PCA + tuned SVM, confidence-aware outputs, and robust Flask integration demonstrates that practical and interpretable CAD support can be built without heavy GPU infrastructure. On the current artifact-backed run, SVM outperformed Logistic Regression and achieved 88.33% test accuracy, validating the approach for educational and prototype clinical support scenarios.
+
+References
+[1] World Health Organization (WHO), global cancer and neurological burden reports.
+[2] J. D. Rudie et al., MRI-based machine learning for glioma and brain tumor analysis, AJNR.
+[3] C. M. Bishop, Pattern Recognition and Machine Learning, Springer, 2006.
+[4] M. Grinberg, Flask Web Development, 2nd ed., O'Reilly, 2018.
+[5] G. Bradski, The OpenCV Library, Dr. Dobb's Journal, 2000.
+[6] I. T. Jolliffe and J. Cadima, Principal component analysis: a review and recent developments, Phil. Trans. A, 2016.
+[7] C. Cortes and V. Vapnik, Support-vector networks, Machine Learning, 1995.
+[8] B. Scholkopf and A. J. Smola, Learning with Kernels, MIT Press, 2002.
+[9] B. H. Menze et al., The BRATS benchmark, IEEE TMI, 2015.
+[10] S. Bakas et al., BRATS challenge analyses, arXiv, 2018.
+[11] F. Pedregosa et al., Scikit-learn: machine learning in Python, JMLR, 2011.
+[12] S. M. Lundberg and S.-I. Lee, SHAP: a unified approach to interpreting model predictions, NeurIPS, 2017.
+[13] M. T. Ribeiro, S. Singh, and C. Guestrin, LIME: explaining classifier predictions, KDD, 2016.
+[14] G. Van Rossum and F. L. Drake, Python 3 Reference Manual, CreateSpace, 2009.
+[15] N. J. Tustison et al., N4ITK: improved N3 bias correction, IEEE TMI, 2010.

@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ARTIFACT_DIR = os.path.join(BASE_DIR, "artifacts")
 MODEL_BUNDLE_PATH = os.path.join(ARTIFACT_DIR, "model_bundle.joblib")
 TRAINING_REPORT_PATH = os.path.join(ARTIFACT_DIR, "training_report.json")
-MODEL_VERSION = "2.0.0"
+MODEL_VERSION = "2.1.1"
 
 DATASET_LABELS = {
     "no_tumor": 0,
@@ -39,6 +39,7 @@ TEST_SIZE = 0.3
 PCA_VARIANCE = 0.98
 LOW_CONFIDENCE_THRESHOLD = float(os.getenv("LOW_CONFIDENCE_THRESHOLD", "70"))
 ENABLE_CLAHE_DEFAULT = os.getenv("ENABLE_CLAHE", "0") == "1"
+ENABLE_TRAIN_AUGMENTATION = os.getenv("ENABLE_TRAIN_AUGMENTATION", "0") == "1"
 
 
 def _dataset_class_path(class_name):
@@ -114,56 +115,102 @@ def _class_distribution(labels):
     return distribution
 
 
+def _augment_training_split(images, labels):
+    if not ENABLE_TRAIN_AUGMENTATION:
+        return images, labels, {
+            "enabled": False,
+            "strategies": ["original_only"],
+            "input_samples": int(len(images)),
+            "output_samples": int(len(images)),
+        }
+
+    flipped_images = np.flip(images, axis=2).copy()
+    clahe_images = np.array([_apply_clahe(image) for image in images], dtype=np.uint8)
+
+    augmented_images = np.concatenate([images, flipped_images, clahe_images], axis=0)
+    augmented_labels = np.concatenate([labels, labels, labels], axis=0)
+
+    rng = np.random.default_rng(RANDOM_STATE)
+    shuffled_indices = rng.permutation(len(augmented_labels))
+    augmented_images = augmented_images[shuffled_indices]
+    augmented_labels = augmented_labels[shuffled_indices]
+
+    report = {
+        "enabled": True,
+        "strategies": ["original", "horizontal_flip", "clahe"],
+        "input_samples": int(len(images)),
+        "output_samples": int(len(augmented_images)),
+    }
+    return augmented_images, augmented_labels, report
+
+
 def _train_model(enable_grid_search=True):
     train_start = time.perf_counter()
 
     x, y = _load_dataset()
-    x_flattened = x.reshape(len(x), -1).astype(np.float32)
-
-    x_train, x_test, y_train, y_test = train_test_split(
-        x_flattened,
+    x_train_images, x_test_images, y_train, y_test = train_test_split(
+        x,
         y,
         test_size=TEST_SIZE,
         random_state=RANDOM_STATE,
         stratify=y,
     )
 
-    x_train = x_train / 255.0
-    x_test = x_test / 255.0
+    train_images_before_augmentation = int(len(x_train_images))
+    x_train_images, y_train, augmentation_report = _augment_training_split(x_train_images, y_train)
+
+    x_train = x_train_images.reshape(len(x_train_images), -1).astype(np.float32) / 255.0
+    x_test = x_test_images.reshape(len(x_test_images), -1).astype(np.float32) / 255.0
 
     pca = PCA(PCA_VARIANCE, random_state=RANDOM_STATE)
     x_train_pca = pca.fit_transform(x_train)
     x_test_pca = pca.transform(x_test)
 
-    logistic_model = LogisticRegression(max_iter=1000, C=0.1, random_state=RANDOM_STATE)
+    logistic_model = LogisticRegression(max_iter=3000, C=1.0, random_state=RANDOM_STATE)
     logistic_model.fit(x_train_pca, y_train)
     logistic_predictions = logistic_model.predict(x_test_pca)
     logistic_metrics = _evaluate_model(y_test, logistic_predictions)
 
     svm_model = SVC(kernel="rbf", probability=True, random_state=RANDOM_STATE)
-    best_params = {"kernel": "rbf", "C": 1.0, "gamma": "scale"}
+    best_params = {"kernel": "rbf", "C": 1.0, "gamma": "scale", "class_weight": None}
     cv_best_score = None
+    search_space_size = 1
 
     if enable_grid_search:
         cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
         param_grid = {
-            "C": [0.1, 1, 10],
-            "gamma": ["scale", "auto"],
+            "C": [0.5, 1, 5, 10, 20, 40],
+            "gamma": ["scale", "auto", 0.001, 0.003, 0.005, 0.01],
+            "class_weight": [None, "balanced"],
         }
+        search_space_size = len(param_grid["C"]) * len(param_grid["gamma"]) * len(param_grid["class_weight"])
+
         grid_search = GridSearchCV(
-            estimator=svm_model,
+            estimator=SVC(kernel="rbf", probability=False, random_state=RANDOM_STATE),
             param_grid=param_grid,
             scoring="accuracy",
             cv=cv,
             n_jobs=-1,
         )
         grid_search.fit(x_train_pca, y_train)
-        svm_model = grid_search.best_estimator_
+
         best_params = {
             "kernel": "rbf",
             "C": float(grid_search.best_params_["C"]),
-            "gamma": str(grid_search.best_params_["gamma"]),
+            "gamma": grid_search.best_params_["gamma"],
+            "class_weight": grid_search.best_params_["class_weight"],
         }
+
+        svm_model = SVC(
+            kernel="rbf",
+            probability=True,
+            random_state=RANDOM_STATE,
+            C=best_params["C"],
+            gamma=best_params["gamma"],
+            class_weight=best_params["class_weight"],
+        )
+        svm_model.fit(x_train_pca, y_train)
+
         cv_best_score = float(grid_search.best_score_)
     else:
         svm_model.fit(x_train_pca, y_train)
@@ -199,14 +246,17 @@ def _train_model(enable_grid_search=True):
         "explained_variance_sum": float(np.sum(pca.explained_variance_ratio_)),
         "dataset": {
             "total_images": int(len(x)),
-            "train_images": int(len(x_train)),
+            "train_images": train_images_before_augmentation,
+            "train_images_after_augmentation": int(len(x_train)),
             "test_images": int(len(x_test)),
             "class_distribution": _class_distribution(y),
         },
+        "augmentation": augmentation_report,
         "baseline_logistic_regression": {
             "metrics": logistic_metrics,
         },
         "svm": {
+            "search_space_size": int(search_space_size),
             "best_params": best_params,
             "cv_best_accuracy": cv_best_score,
             "metrics": svm_metrics,
@@ -219,10 +269,11 @@ def _train_model(enable_grid_search=True):
     }
 
     LOGGER.info(
-        "Training complete. SVM accuracy=%.4f, Logistic accuracy=%.4f, PCA components=%s",
+        "Training complete. SVM accuracy=%.4f, Logistic accuracy=%.4f, PCA components=%s, train_after_augmentation=%s",
         svm_metrics["accuracy"],
         logistic_metrics["accuracy"],
         pca.n_components_,
+        len(x_train),
     )
 
     return pca, svm_model, training_report

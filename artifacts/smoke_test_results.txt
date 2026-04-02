@@ -1,0 +1,5 @@
+home:200:PASS
+metrics_json:200:PASS
+metrics_html:200:PASS
+history_json:200:PASS
+history_html:200:PASS

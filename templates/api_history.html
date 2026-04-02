@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prediction History Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script>
+    (function () {
+      var t = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+</head>
+
+<body>
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+    <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+      stroke-width="2">
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="2" x2="12" y2="4" />
+      <line x1="12" y1="20" x2="12" y2="22" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="2" y1="12" x2="4" y2="12" />
+      <line x1="20" y1="12" x2="22" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+    <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+      stroke-width="2" style="display:none">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" />
+    </svg>
+  </button>
+
+  <main class="page-shell">
+    <section class="hero">
+      <span class="hero__badge">Operational Traceability</span>
+      <h1>Prediction History Dashboard</h1>
+      <p>
+        Review and filter inference records captured from both web and API requests. Use the filters to inspect
+        confidence behavior, latency, and status trends.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Filters</h2>
+      <form class="filters-form" method="get" action="/api/history">
+        <input type="hidden" name="view" value="html">
+
+        <label>
+          Class
+          <select name="class">
+            <option value="">All</option>
+            {% for class_name in class_options %}
+            <option value="{{ class_name }}" {% if filters['class']==class_name %}selected{% endif %}>{{
+              class_name.replace('_', ' ') }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label>
+          Source
+          <select name="source">
+            <option value="">All</option>
+            <option value="web" {% if filters['source']=='web' %}selected{% endif %}>web</option>
+            <option value="api" {% if filters['source']=='api' %}selected{% endif %}>api</option>
+          </select>
+        </label>
+
+        <label>
+          Status
+          <select name="status">
+            <option value="">All</option>
+            <option value="success" {% if filters['status']=='success' %}selected{% endif %}>success</option>
+            <option value="error" {% if filters['status']=='error' %}selected{% endif %}>error</option>
+          </select>
+        </label>
+
+        <label>
+          Min confidence (%)
+          <input type="number" name="min_confidence" min="0" max="100" step="0.01"
+            value="{{ filters['min_confidence'] }}">
+        </label>
+
+        <label>
+          Max confidence (%)
+          <input type="number" name="max_confidence" min="0" max="100" step="0.01"
+            value="{{ filters['max_confidence'] }}">
+        </label>
+
+        <label>
+          Low confidence flag
+          <select name="low_confidence">
+            <option value="">Any</option>
+            <option value="true" {% if filters['low_confidence']=='true' %}selected{% endif %}>true</option>
+            <option value="false" {% if filters['low_confidence']=='false' %}selected{% endif %}>false</option>
+          </select>
+        </label>
+
+        <label>
+          Start date (ISO)
+          <input type="text" name="start_date" placeholder="2026-04-01T00:00:00Z" value="{{ filters['start_date'] }}">
+        </label>
+
+        <label>
+          End date (ISO)
+          <input type="text" name="end_date" placeholder="2026-04-30T23:59:59Z" value="{{ filters['end_date'] }}">
+        </label>
+
+        <label>
+          Per page
+          <input type="number" name="per_page" min="1" max="100" value="{{ data.per_page }}">
+        </label>
+
+        <div class="actions-row">
+          <button class="btn btn-primary" type="submit">Apply Filters</button>
+          <a class="btn btn-secondary" href="/api/history?view=html">Reset</a>
+          <a class="btn btn-secondary" href="/api/history?format=json">Raw JSON</a>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Records</h2>
+      <p class="meta-text">Page {{ data['page'] }} of {{ data['pages'] }} · Total records: {{ data['total'] }}</p>
+
+      {% if data['items'] %}
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Source</th>
+              <th>Status</th>
+              <th>Class</th>
+              <th>Confidence</th>
+              <th>Low conf.</th>
+              <th>Latency (ms)</th>
+              <th>Model</th>
+              <th>Filename</th>
+              <th>Error</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in data['items'] %}
+            <tr>
+              <td>{{ item.get('timestamp', '-') }}</td>
+              <td>{{ item.get('source', '-') }}</td>
+              <td>{{ item.get('status', '-') }}</td>
+              <td>{{ item.get('tumor_type', '-').replace('_', ' ') }}</td>
+              <td>{{ item.get('confidence', '-') }}</td>
+              <td>{{ item.get('low_confidence', '-') }}</td>
+              <td>{{ item.get('latency_ms', '-') }}</td>
+              <td>{{ item.get('model_version', '-') }}</td>
+              <td>{{ item.get('filename', '-') }}</td>
+              <td>{{ item.get('error', '-') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="message message-warning">No records matched the selected filters.</div>
+      {% endif %}
+
+      <div class="pager-row">
+        {% if prev_url %}
+        <a class="btn btn-secondary" href="{{ prev_url }}">Previous</a>
+        {% else %}
+        <span class="btn btn-secondary is-disabled">Previous</span>
+        {% endif %}
+
+        {% if next_url %}
+        <a class="btn btn-secondary" href="{{ next_url }}">Next</a>
+        {% else %}
+        <span class="btn btn-secondary is-disabled">Next</span>
+        {% endif %}
+      </div>
+
+      <div class="actions-row">
+        <a class="btn btn-secondary" href="/">Back to Home</a>
+        <a class="btn btn-secondary" href="/api/metrics?view=html">Open Metrics Dashboard</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var btn = document.getElementById('theme-toggle');
+      var sun = document.getElementById('icon-sun');
+      var moon = document.getElementById('icon-moon');
+
+      function applyTheme(theme) {
+        root.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        sun.style.display = theme === 'dark' ? 'none' : 'block';
+        moon.style.display = theme === 'dark' ? 'block' : 'none';
+      }
+
+      applyTheme(localStorage.getItem('theme') || 'light');
+
+      btn.addEventListener('click', function () {
+        applyTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+      });
+    })();
+  </script>
+</body>
+
+</html>
